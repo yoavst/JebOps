@@ -1,0 +1,9 @@
+<component name="libraryTable">
+  <library name="jeb">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/libs/jeb.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>
