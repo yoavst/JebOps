@@ -10,12 +10,14 @@ class RenameStats {
     val renamedMethods: MutableMap<IDexMethod, RenameRequest> = mutableMapOf()
     val renamedFields: MutableMap<IJavaField, RenameRequest> = mutableMapOf()
     val renamedIdentifiers: MutableMap<IJavaIdentifier, RenameRequest> = mutableMapOf()
+    val effectedClasses: MutableSet<IDexClass> = mutableSetOf()
 
     fun clear() {
         renamedClasses.clear()
         renamedMethods.clear()
         renamedFields.clear()
         renamedIdentifiers.clear()
+        effectedClasses.clear()
     }
 
     override fun toString(): String = buildString {

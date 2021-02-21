@@ -6,6 +6,7 @@ package com.yoavst.jeb.utils.renaming
  */
 enum class RenameReason(val prefix: String) : Comparable<RenameReason> {
     Type("T"),
+    FieldName("F"),
     Log("L"),
     MethodStringArgument("A"),
     ToString("TS"),

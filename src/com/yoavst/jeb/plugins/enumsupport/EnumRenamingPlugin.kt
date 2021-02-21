@@ -1,6 +1,5 @@
 package com.yoavst.jeb.plugins.enumsupport
 
-import com.pnfsoftware.jeb.core.IOptionDefinition
 import com.pnfsoftware.jeb.core.IPluginInformation
 import com.pnfsoftware.jeb.core.PluginInformation
 import com.pnfsoftware.jeb.core.Version
@@ -14,13 +13,13 @@ import com.yoavst.jeb.utils.renaming.RenameRequest
 
 /**
  * Refactor assignments of the given forms:
-   ```
-   // 1.
-   cls.a = new EnumCls("LIST_TYPE", ...)
-   // 2.
-   var temp = new EnumCls("LIST_TYPE", ...)
-   cls.a = temp
-   ```
+```
+// 1.
+cls.a = new EnumCls("LIST_TYPE", ...)
+// 2.
+var temp = new EnumCls("LIST_TYPE", ...)
+cls.a = temp
+```
  */
 class EnumRenamingPlugin : BasicEnginesPlugin(supportsClassFilter = true) {
     override fun getPluginInformation(): IPluginInformation = PluginInformation(
@@ -34,14 +33,12 @@ class EnumRenamingPlugin : BasicEnginesPlugin(supportsClassFilter = true) {
 
     override fun processUnit(unit: IDexUnit, renameEngine: RenameEngine) {
         val decompiler = unit.decompiler
-        for (cls in unit.subclassesOf("Ljava/lang/Enum;")) {
-            if (cls.matches(classFilter)) {
-                logger.trace("Processing enum: $cls")
-                val staticConstructor = cls.methods.first { it.originalName == "<clinit>" }
-                val decompiledStaticConstructor = decompiler.decompileDexMethod(staticConstructor) ?: continue
-                EnumAstTraversal(cls, renameEngine).traverse(decompiledStaticConstructor)
-                renameEngine.renameClass(RenameRequest("Enum", RenameReason.Type, informationalRename = true), cls)
-            }
+        for (cls in unit.subclassesOf("Ljava/lang/Enum;").filter(classFilter::matches)) {
+            logger.trace("Processing enum: $cls")
+            val staticConstructor = cls.methods.first { it.originalName == "<clinit>" }
+            val decompiledStaticConstructor = decompiler.decompileDexMethod(staticConstructor) ?: continue
+            EnumAstTraversal(cls, renameEngine).traverse(decompiledStaticConstructor)
+            renameEngine.renameClass(RenameRequest("Enum", RenameReason.Type, informationalRename = true), cls)
         }
     }
 

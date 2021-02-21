@@ -81,7 +81,7 @@ object RenameFrontendEngineImpl : RenameFrontendEngine {
         if ('$' in name)
             return false
 
-        val oldReason = name.extractRenameReason() ?: return true
+        val oldReason = getModifiedInfo(name)?.second ?: return true
         return reason >= oldReason
     }
 
@@ -92,26 +92,26 @@ object RenameFrontendEngineImpl : RenameFrontendEngine {
      * Some generated classes may contain __ in name, but that mean
      * they have the original name, so it's ok.
      **/
-    private fun String.extractRenameReason(): RenameReason? {
-        var nameParts = split("__", limit = 2)
+    override fun getModifiedInfo(name: String): Pair<String, RenameReason?>? {
+        var nameParts = name.split("__", limit = 2)
         if (nameParts.size == 1) {
-            nameParts = split("_", limit = 2)
+            nameParts = name.split("_", limit = 2)
             if (nameParts.size == 1) {
                 return null
             }
             // assume there is no reason for _ to be in name we want to rename.
             // The only reason it actually make sense is if we try to rename constant.
             // And in this case, it's ok to fail since we probably want to retain the original name.
-            return RenameReason.User
+            return nameParts[1] to null
         }
-        val generatedNameParts = nameParts.last().split("_", limit = 2)
+        val generatedNameParts = nameParts[1].split("_", limit = 2)
         if (generatedNameParts.size == 1) {
             // The user was too lazy to remove the extra underscore, ok...
-            return RenameReason.User
+            return generatedNameParts[0] to null
         }
         val prefix = generatedNameParts[0]
         if (RenameReason.MAX_PREFIX_LENGTH < prefix.length) return null
-        return RenameReason.fromPrefix(prefix)
+        return generatedNameParts[1] to RenameReason.fromPrefix(prefix)
     }
 
     private fun String.extractOriginalName(): String {

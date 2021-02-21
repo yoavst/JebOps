@@ -6,7 +6,6 @@ import com.pnfsoftware.jeb.core.IOptionDefinition
 import com.pnfsoftware.jeb.core.units.code.android.IDexUnit
 import com.pnfsoftware.jeb.util.logging.GlobalLog
 import com.pnfsoftware.jeb.util.logging.ILogger
-import com.yoavst.jeb.tostring.getDexUnits
 import com.yoavst.jeb.utils.renaming.RenameEngine
 
 abstract class BasicEnginesPlugin(private val supportsClassFilter: Boolean = false) : AbstractEnginesPlugin() {

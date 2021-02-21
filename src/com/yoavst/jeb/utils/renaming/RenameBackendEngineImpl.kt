@@ -8,14 +8,13 @@ import com.pnfsoftware.jeb.core.units.code.android.dex.IDexMethod
 import com.pnfsoftware.jeb.core.units.code.java.IJavaField
 import com.pnfsoftware.jeb.core.units.code.java.IJavaIdentifier
 import com.pnfsoftware.jeb.util.logging.GlobalLog
-import com.yoavst.jeb.tostring.ToStringPlugin
 import com.yoavst.jeb.utils.currentName
 import com.yoavst.jeb.utils.decompiler
 import com.yoavst.jeb.utils.originalName
 import com.yoavst.jeb.utils.originalSignature
 
 object RenameBackendEngineImpl : RenameBackendEngine {
-    private val logger = GlobalLog.getLogger(ToStringPlugin::class.java)
+    private val logger = GlobalLog.getLogger(javaClass)
     private val decompilerCache: MutableMap<IDexUnit, IDexDecompilerUnit> = mutableMapOf()
 
     override fun renameClass(renameRequest: InternalRenameRequest, cls: IDexClass): Boolean {
@@ -69,7 +68,11 @@ object RenameBackendEngineImpl : RenameBackendEngine {
         return false
     }
 
-    override fun renameIdentifier(renameRequest: InternalRenameRequest, identifier: IJavaIdentifier, unit: IDexUnit): Boolean {
+    override fun renameIdentifier(
+        renameRequest: InternalRenameRequest,
+        identifier: IJavaIdentifier,
+        unit: IDexUnit
+    ): Boolean {
         val decompiler = decompilerCache.getOrPut(unit, unit::decompiler)
         if (decompiler.setIdentifierName(identifier, renameRequest.newName)) {
             logger.debug("Renamed identifier $identifier to ${renameRequest.newName}")

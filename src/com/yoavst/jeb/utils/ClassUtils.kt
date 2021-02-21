@@ -8,17 +8,17 @@ private object ClassUtils
 
 private val logger = GlobalLog.getLogger(ClassUtils::class.java)
 
-fun IDexUnit.subclassesOf(classSignature: String): List<IDexClass> {
+fun IDexUnit.subclassesOf(classSignature: String): Sequence<IDexClass> {
     val classesWithGivenName = types.filter { it.signature == classSignature }
     if (classesWithGivenName.isEmpty()) {
         logger.error("Failed to find class with the given signature: $classSignature")
-        return emptyList()
+        return emptySequence()
     } else if (classesWithGivenName.size != 1) {
         logger.error("Multiple class with the given signature: ${classesWithGivenName.joinToString()}")
-        return emptyList()
+        return emptySequence()
     }
 
-    return classes.filter { classesWithGivenName == it.supertypes }
+    return classes.asSequence().filter { classesWithGivenName == it.supertypes }
 }
 
-fun IDexClass.matches(regex: Regex): Boolean = regex.matches(signature)
+fun Regex.matches(cls: IDexClass): Boolean = matches(cls.signature)

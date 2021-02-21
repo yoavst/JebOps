@@ -11,9 +11,12 @@ interface RenameEngine {
 
     fun renameClass(renameRequest: RenameRequest, cls: IDexClass)
     fun renameField(renameRequest: RenameRequest, field: IJavaField, cls: IDexClass)
-    fun renameField(renameRequest: RenameRequest, field: IJavaField, unit: IDexUnit)
     fun renameMethod(renameRequest: RenameRequest, method: IDexMethod, cls: IDexClass)
+    fun renameGetter(renameRequest: RenameRequest, method: IDexMethod, cls: IDexClass)
+    fun renameSetter(renameRequest: RenameRequest, method: IDexMethod, cls: IDexClass)
     fun renameIdentifier(renameRequest: RenameRequest, identifier: IJavaIdentifier, unit: IDexUnit)
+
+    fun getModifiedInfo(name: String): Pair<String, RenameReason?>?
 
     companion object {
         fun create() = RenameEngineImpl(RenameFrontendEngineImpl, RenameBackendEngineImpl)
