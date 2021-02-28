@@ -51,24 +51,27 @@ abstract class BasicEnginesPlugin(
         if (supportsClassFilter)
             out += ClassFilterOption
         if (defaultForScopeOnThisClass != null)
-            out += scopeThisClass(defaultForScopeOnThisClass)
+            out += scopeThisClass(
+                defaultForScopeOnThisClass,
+                currentFocusedType(null, false)?.currentSignature ?: "no class selected"
+            )
         if (defaultForScopeOnThisFunction != null)
-            out += scopeThisMethod(defaultForScopeOnThisFunction)
+            out += scopeThisMethod(
+                defaultForScopeOnThisFunction,
+                currentFocusedMethod(null, false)?.currentSignature ?: "no method selected"
+            )
         return out
     }
 
     protected abstract fun processUnit(unit: IDexUnit, renameEngine: RenameEngine)
     protected fun processOptions(executionOptions: Map<String, String>) {
         if (supportsClassFilter)
-            classFilter = Regex(executionOptions[ClassFilterOption.name].orIfBlank(ClassFilterDefault))
+            classFilter = Regex(executionOptions[ClassFilterOptionTag].orIfBlank(ClassFilterDefault))
         if (defaultForScopeOnThisClass != null)
             isOperatingOnlyOnThisClass =
-                executionOptions[scopeThisClass(defaultForScopeOnThisClass).name].orIfBlank(defaultForScopeOnThisClass.toString())
-                    .toBoolean()
+                executionOptions[ScopeThisClassTag].orIfBlank(defaultForScopeOnThisClass.toString()).toBoolean()
         if (defaultForScopeOnThisFunction != null)
             isOperatingOnlyOnThisMethod =
-                executionOptions[scopeThisMethod(defaultForScopeOnThisFunction).name].orIfBlank(
-                    defaultForScopeOnThisFunction.toString()
-                ).toBoolean()
+                executionOptions[ScopeThisMethodTag].orIfBlank(defaultForScopeOnThisFunction.toString()).toBoolean()
     }
 }

@@ -21,4 +21,13 @@ fun IDexUnit.subclassesOf(classSignature: String): Sequence<IDexClass> {
     return classes.asSequence().filter { classesWithGivenName == it.supertypes }
 }
 
+fun IDexClass.isSubclassOf(unit: IDexUnit, classSignature: String): Boolean {
+    val classesWithGivenName = unit.types.filter { it.signature == classSignature }
+    if (classesWithGivenName.isEmpty()) {
+        logger.error("Failed to find class with the given signature: $classSignature")
+        return false
+    }
+    return supertypes == classesWithGivenName
+}
+
 fun Regex.matches(cls: IDexClass): Boolean = matches(cls.signature)

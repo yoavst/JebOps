@@ -15,9 +15,9 @@ fun IEnginesContext.getDexUnits(): MutableList<IDexUnit> =
 
 fun IUnit.refresh() = UnitUtil.notifyGenericChange(this)
 
-fun unsafeGetGraphicalContext(context: IEnginesContext): IGraphicalClientContext {
+fun unsafeGetGraphicalContext(context: IEnginesContext? = null): IGraphicalClientContext {
     // first try to get from cache
-    val cached = context.projects.mapNotNull { it.getData(GRAPHICAL_CONTEXT) as? IGraphicalClientContext }.firstOrNull()
+    val cached = context?.projects?.mapNotNull { it.getData(GRAPHICAL_CONTEXT) as? IGraphicalClientContext }?.firstOrNull()
     if (cached != null)
         return cached
     try {
@@ -28,12 +28,12 @@ fun unsafeGetGraphicalContext(context: IEnginesContext): IGraphicalClientContext
         val rcpInstance = instanceField.get(null)
         val result = publicContextClass.constructors[0].newInstance(rcpInstance) as IGraphicalClientContext
         // save to cache
-        context.projects.firstOrNull()?.setData(GRAPHICAL_CONTEXT, cached, false)
+        context?.projects?.firstOrNull()?.setData(GRAPHICAL_CONTEXT, cached, false)
         return result
     } catch (throwable: Throwable) {
         GlobalLog.getLogger()
             .error("Unsupported JEB version. Please contact me with the given version number, and jeb.jar, jebc.jar\n" +
                     "In the meantime, you could use the script ContextCacheScript.py to load the context from script, and then try again.")
-        throw UnsupportedClassVersionError("Jeb version is incorrect").initCause(throwable)
+        throw IllegalStateException("Jeb version is incorrect").initCause(throwable)
     }
 }
