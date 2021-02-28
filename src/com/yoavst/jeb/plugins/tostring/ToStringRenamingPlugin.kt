@@ -3,6 +3,7 @@ package com.yoavst.jeb.plugins.tostring
 import com.pnfsoftware.jeb.core.IPluginInformation
 import com.pnfsoftware.jeb.core.PluginInformation
 import com.pnfsoftware.jeb.core.Version
+import com.pnfsoftware.jeb.core.units.code.android.IDexDecompilerUnit
 import com.pnfsoftware.jeb.core.units.code.android.IDexUnit
 import com.pnfsoftware.jeb.core.units.code.android.dex.IDexClass
 import com.pnfsoftware.jeb.core.units.code.java.*
@@ -11,7 +12,7 @@ import com.yoavst.jeb.utils.renaming.RenameEngine
 import com.yoavst.jeb.utils.renaming.RenameReason
 import com.yoavst.jeb.utils.renaming.RenameRequest
 
-class ToStringRenamingPlugin : BasicEnginesPlugin(supportsClassFilter = true) {
+class ToStringRenamingPlugin : BasicEnginesPlugin(supportsClassFilter = true, defaultForScopeOnThisClass = false) {
     override fun getPluginInformation(): IPluginInformation = PluginInformation(
         "ToString renaming",
         "Fire the plugin to change obfuscated fields' name given a verbose toString implementation",
@@ -23,15 +24,23 @@ class ToStringRenamingPlugin : BasicEnginesPlugin(supportsClassFilter = true) {
 
     override fun processUnit(unit: IDexUnit, renameEngine: RenameEngine) {
         val decompiler = unit.decompiler
-        for (cls in unit.classes.asSequence().filter(classFilter::matches)) {
-            val toStringMethod = cls.getMethod(false, "toString") ?: continue
-            logger.trace("Processing class: ${cls.currentName}")
-            val decompiledToStringMethod = decompiler.decompileDexMethod(toStringMethod) ?: continue
-            processToStringMethod(decompiledToStringMethod, cls, renameEngine)
+        if (isOperatingOnlyOnThisClass) {
+            val cls = focusedClass?.implementingClass ?: return
+            processClass(cls, decompiler, renameEngine)
+        } else {
+            unit.classes.asSequence().filter(classFilter::matches)
+                .forEach { processClass(it, decompiler, renameEngine) }
         }
 
         propagateRenameToGetterAndSetters(unit, renameEngine.stats.effectedClasses, renameEngine)
         unit.refresh()
+    }
+
+    private fun processClass(cls: IDexClass, decompiler: IDexDecompilerUnit, renameEngine: RenameEngine) {
+        val toStringMethod = cls.getMethod(false, "toString") ?: return
+        logger.trace("Processing class: ${cls.currentName}")
+        val decompiledToStringMethod = decompiler.decompileDexMethod(toStringMethod) ?: return
+        processToStringMethod(decompiledToStringMethod, cls, renameEngine)
     }
 
     /** Process a toString() method from the given class **/

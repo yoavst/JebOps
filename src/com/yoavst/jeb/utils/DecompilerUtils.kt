@@ -21,3 +21,10 @@ fun IDexDecompilerUnit.decompileDexMethod(method: IDexMethod): IJavaMethod? {
 
     return getMethod(method.signature, false)
 }
+
+fun IJavaMethod.toDexMethod(unit: IDexUnit): IDexMethod? {
+    val result = unit.getMethod(signature)
+    if (result == null)
+        logger.error("Could not convert java method to dex method: $this")
+    return result
+}

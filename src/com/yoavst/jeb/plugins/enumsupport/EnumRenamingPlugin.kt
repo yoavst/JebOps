@@ -3,6 +3,7 @@ package com.yoavst.jeb.plugins.enumsupport
 import com.pnfsoftware.jeb.core.IPluginInformation
 import com.pnfsoftware.jeb.core.PluginInformation
 import com.pnfsoftware.jeb.core.Version
+import com.pnfsoftware.jeb.core.units.code.android.IDexDecompilerUnit
 import com.pnfsoftware.jeb.core.units.code.android.IDexUnit
 import com.pnfsoftware.jeb.core.units.code.android.dex.IDexClass
 import com.pnfsoftware.jeb.core.units.code.java.*
@@ -21,7 +22,7 @@ var temp = new EnumCls("LIST_TYPE", ...)
 cls.a = temp
 ```
  */
-class EnumRenamingPlugin : BasicEnginesPlugin(supportsClassFilter = true) {
+class EnumRenamingPlugin : BasicEnginesPlugin(supportsClassFilter = true, defaultForScopeOnThisClass = false) {
     override fun getPluginInformation(): IPluginInformation = PluginInformation(
         "Enum fields renaming",
         "Fire the plugin to change obfuscated enum field names to their real name if available",
@@ -33,18 +34,27 @@ class EnumRenamingPlugin : BasicEnginesPlugin(supportsClassFilter = true) {
 
     override fun processUnit(unit: IDexUnit, renameEngine: RenameEngine) {
         val decompiler = unit.decompiler
-        for (cls in unit.subclassesOf("Ljava/lang/Enum;").filter(classFilter::matches)) {
-            logger.trace("Processing enum: $cls")
-            val staticConstructor = cls.methods.first { it.originalName == "<clinit>" }
-            val decompiledStaticConstructor = decompiler.decompileDexMethod(staticConstructor) ?: continue
-            EnumAstTraversal(cls, renameEngine).traverse(decompiledStaticConstructor)
-            renameEngine.renameClass(RenameRequest("Enum", RenameReason.Type, informationalRename = true), cls)
+        if (isOperatingOnlyOnThisClass) {
+            val cls = focusedClass?.implementingClass ?: return
+            processClass(cls, decompiler, renameEngine)
+        } else {
+            unit.subclassesOf("Ljava/lang/Enum;").filter(classFilter::matches)
+                .forEach { processClass(it, decompiler, renameEngine) }
         }
+        unit.refresh()
+    }
+
+    private fun processClass(cls: IDexClass, decompiler: IDexDecompilerUnit, renameEngine: RenameEngine) {
+        logger.trace("Processing enum: $cls")
+        val staticConstructor = cls.methods.first { it.originalName == "<clinit>" }
+        val decompiledStaticConstructor = decompiler.decompileDexMethod(staticConstructor) ?: return
+        EnumAstTraversal(cls, renameEngine).traverse(decompiledStaticConstructor)
+        renameEngine.renameClass(RenameRequest("Enum", RenameReason.Type, informationalRename = true), cls)
     }
 
     private class EnumAstTraversal(private val cls: IDexClass, renameEngine: RenameEngine) :
         BasicAstTraversal(renameEngine) {
-        private val classSignature: String = cls.signature
+        private val classSignature: String = cls.originalSignature
         private val mapping = mutableMapOf<IJavaIdentifier, IJavaNew>()
 
         override fun traverseNonCompound(statement: IStatement) {

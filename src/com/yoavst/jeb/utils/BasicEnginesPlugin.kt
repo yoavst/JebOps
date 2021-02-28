@@ -7,12 +7,22 @@ import com.pnfsoftware.jeb.core.units.code.android.IDexUnit
 import com.pnfsoftware.jeb.util.logging.GlobalLog
 import com.pnfsoftware.jeb.util.logging.ILogger
 import com.yoavst.jeb.utils.renaming.RenameEngine
+import kotlin.properties.Delegates
 
-abstract class BasicEnginesPlugin(private val supportsClassFilter: Boolean = false) : AbstractEnginesPlugin() {
+abstract class BasicEnginesPlugin(
+    private val supportsClassFilter: Boolean = false,
+    private val defaultForScopeOnThisClass: Boolean? = null,
+    private val defaultForScopeOnThisFunction: Boolean? = null
+) : AbstractEnginesPlugin() {
     protected lateinit var context: IEnginesContext
     protected val logger: ILogger = GlobalLog.getLogger(javaClass)
 
     protected lateinit var classFilter: Regex
+    protected var isOperatingOnlyOnThisClass: Boolean by Delegates.notNull()
+    protected var isOperatingOnlyOnThisMethod: Boolean by Delegates.notNull()
+
+    protected val focusedMethod by lazy { currentFocusedMethod(context) }
+    protected val focusedClass by lazy { currentFocusedType(context) }
 
     init {
         logToFile()
@@ -40,6 +50,10 @@ abstract class BasicEnginesPlugin(private val supportsClassFilter: Boolean = fal
         val out = mutableListOf<IOptionDefinition>()
         if (supportsClassFilter)
             out += ClassFilterOption
+        if (defaultForScopeOnThisClass != null)
+            out += scopeThisClass(defaultForScopeOnThisClass)
+        if (defaultForScopeOnThisFunction != null)
+            out += scopeThisMethod(defaultForScopeOnThisFunction)
         return out
     }
 
@@ -47,5 +61,14 @@ abstract class BasicEnginesPlugin(private val supportsClassFilter: Boolean = fal
     protected fun processOptions(executionOptions: Map<String, String>) {
         if (supportsClassFilter)
             classFilter = Regex(executionOptions[ClassFilterOption.name].orIfBlank(ClassFilterDefault))
+        if (defaultForScopeOnThisClass != null)
+            isOperatingOnlyOnThisClass =
+                executionOptions[scopeThisClass(defaultForScopeOnThisClass).name].orIfBlank(defaultForScopeOnThisClass.toString())
+                    .toBoolean()
+        if (defaultForScopeOnThisFunction != null)
+            isOperatingOnlyOnThisMethod =
+                executionOptions[scopeThisMethod(defaultForScopeOnThisFunction).name].orIfBlank(
+                    defaultForScopeOnThisFunction.toString()
+                ).toBoolean()
     }
 }
