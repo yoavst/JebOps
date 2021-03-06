@@ -149,7 +149,7 @@ class ConstArgRenamingPlugin :
             logger.warning("Failed to decompile method: ${method.currentSignature}")
             return
         }
-        ConstArgRenamingTraversal(method, method.classType.implementingClass!!, unit, renameEngine)
+        ConstArgRenamingTraversal(method, method.classType.implementingClass!!, unit, renameEngine).traverse(decompiledMethod.body)
     }
 
     private inner class ConstArgRenamingTraversal(
