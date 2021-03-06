@@ -137,5 +137,5 @@ object RenameFrontendEngineImpl : RenameFrontendEngine {
         return true
     }
 
-    private fun String.sanitize(): String = filter(Char::isJavaIdentifierPart).trim()
+    private fun String.sanitize(): String = trim().map { if (it.isJavaIdentifierPart()) it else "_" }.joinToString("")
 }
