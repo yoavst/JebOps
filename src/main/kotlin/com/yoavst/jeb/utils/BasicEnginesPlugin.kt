@@ -6,6 +6,7 @@ import com.pnfsoftware.jeb.core.IOptionDefinition
 import com.pnfsoftware.jeb.core.units.code.android.IDexUnit
 import com.pnfsoftware.jeb.util.logging.GlobalLog
 import com.pnfsoftware.jeb.util.logging.ILogger
+import com.yoavst.jeb.bridge.UIBridge
 import com.yoavst.jeb.utils.renaming.RenameEngine
 import kotlin.properties.Delegates
 
@@ -20,13 +21,6 @@ abstract class BasicEnginesPlugin(
     protected lateinit var classFilter: Regex
     protected var isOperatingOnlyOnThisClass: Boolean by Delegates.notNull()
     protected var isOperatingOnlyOnThisMethod: Boolean by Delegates.notNull()
-
-    protected val focusedMethod by lazy { currentFocusedMethod(context) }
-    protected val focusedClass by lazy { currentFocusedType(context) }
-
-    init {
-        logToFile()
-    }
 
     override fun execute(context: IEnginesContext, executionOptions: MutableMap<String, String>?) {
         this.context = context
@@ -53,12 +47,12 @@ abstract class BasicEnginesPlugin(
         if (defaultForScopeOnThisClass != null)
             out += scopeThisClass(
                 defaultForScopeOnThisClass,
-                currentFocusedType(null, false)?.currentSignature ?: "no class selected"
+                UIBridge.focusedClass?.currentSignature ?: "no class selected"
             )
         if (defaultForScopeOnThisFunction != null)
             out += scopeThisMethod(
                 defaultForScopeOnThisFunction,
-                currentFocusedMethod(null, false)?.currentSignature ?: "no method selected"
+                UIBridge.focusedMethod?.currentSignature ?: "no method selected"
             )
         return out
     }

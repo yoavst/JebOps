@@ -7,6 +7,7 @@ import com.pnfsoftware.jeb.core.units.code.android.IDexDecompilerUnit
 import com.pnfsoftware.jeb.core.units.code.android.IDexUnit
 import com.pnfsoftware.jeb.core.units.code.android.dex.IDexClass
 import com.pnfsoftware.jeb.core.units.code.java.*
+import com.yoavst.jeb.bridge.UIBridge
 import com.yoavst.jeb.utils.*
 import com.yoavst.jeb.utils.renaming.RenameEngine
 import com.yoavst.jeb.utils.renaming.RenameReason
@@ -35,7 +36,7 @@ class EnumRenamingPlugin : BasicEnginesPlugin(supportsClassFilter = true, defaul
     override fun processUnit(unit: IDexUnit, renameEngine: RenameEngine) {
         val decompiler = unit.decompiler
         if (isOperatingOnlyOnThisClass) {
-            val cls = focusedClass?.implementingClass ?: return
+            val cls = UIBridge.focusedClass?.implementingClass ?: return
             processClass(cls, decompiler, renameEngine)
         } else {
             unit.subclassesOf("Ljava/lang/Enum;").filter(classFilter::matches)

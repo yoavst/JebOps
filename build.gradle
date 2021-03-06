@@ -1,6 +1,6 @@
 plugins {
-    id "org.jetbrains.kotlin.jvm" version "1.4.31"
-    id 'application'
+    id 'org.jetbrains.kotlin.jvm' version '1.4.31'
+    id 'com.github.johnrengelman.shadow' version '6.1.0'
 }
 
 group 'org.yoavst.jeb'
@@ -15,5 +15,4 @@ dependencies {
 
     implementation platform('org.jetbrains.kotlin:kotlin-bom')
     implementation 'org.jetbrains.kotlin:kotlin-stdlib-jdk8'
-
 }
