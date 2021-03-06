@@ -23,7 +23,7 @@ class JarLoader(IScript):
             UIBridge.update(ctx)
 
             # 2. Launch plugin
-            utils.launch_plugin(instance, loader)
+            utils.launch_plugin(instance, ctx, loader)
             return
         except:
             traceback.print_exc(file=sys.stdout)
