@@ -1,0 +1,19 @@
+plugins {
+    id "org.jetbrains.kotlin.jvm" version "1.4.31"
+    id 'application'
+}
+
+group 'org.yoavst.jeb'
+version '0.1'
+
+repositories {
+    jcenter()
+}
+
+dependencies {
+    compileOnly fileTree(dir: 'libs/runtime', include: ['*.jar'])
+
+    implementation platform('org.jetbrains.kotlin:kotlin-bom')
+    implementation 'org.jetbrains.kotlin:kotlin-stdlib-jdk8'
+
+}
