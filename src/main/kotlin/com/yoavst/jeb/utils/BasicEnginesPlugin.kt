@@ -3,6 +3,7 @@ package com.yoavst.jeb.utils
 import com.pnfsoftware.jeb.core.AbstractEnginesPlugin
 import com.pnfsoftware.jeb.core.IEnginesContext
 import com.pnfsoftware.jeb.core.IOptionDefinition
+import com.pnfsoftware.jeb.core.OptionDefinition
 import com.pnfsoftware.jeb.core.units.code.android.IDexUnit
 import com.pnfsoftware.jeb.util.logging.GlobalLog
 import com.pnfsoftware.jeb.util.logging.ILogger
@@ -13,7 +14,9 @@ import kotlin.properties.Delegates
 abstract class BasicEnginesPlugin(
     private val supportsClassFilter: Boolean = false,
     private val defaultForScopeOnThisClass: Boolean? = null,
-    private val defaultForScopeOnThisFunction: Boolean? = null
+    private val defaultForScopeOnThisFunction: Boolean? = null,
+    private val usingSelectedMethod: Boolean = false,
+    private val usingSelectedClass: Boolean = false
 ) : AbstractEnginesPlugin() {
     protected lateinit var context: IEnginesContext
     protected val logger: ILogger = GlobalLog.getLogger(javaClass)
@@ -29,7 +32,7 @@ abstract class BasicEnginesPlugin(
             return
         }
 
-        processOptions(executionOptions ?: mapOf())
+        if (!processOptions(executionOptions ?: mapOf())) return
 
         val renameEngine = RenameEngine.create()
         context.getDexUnits().forEach {
@@ -42,23 +45,32 @@ abstract class BasicEnginesPlugin(
 
     override fun getExecutionOptionDefinitions(): List<IOptionDefinition> {
         val out = mutableListOf<IOptionDefinition>()
+        if (usingSelectedClass)
+            out += usingThisClass(UIBridge.focusedClass?.currentSignature)
+        if (usingSelectedMethod)
+            out += usingThisMethod(UIBridge.focusedMethod?.currentSignature)
+        if (usingSelectedClass || usingSelectedMethod) {
+            // put an empty row
+            out += OptionDefinition("")
+        }
         if (supportsClassFilter)
             out += ClassFilterOption
         if (defaultForScopeOnThisClass != null)
             out += scopeThisClass(
                 defaultForScopeOnThisClass,
-                UIBridge.focusedClass?.currentSignature ?: "no class selected"
+                UIBridge.currentClass?.currentSignature ?: "no class selected"
             )
         if (defaultForScopeOnThisFunction != null)
             out += scopeThisMethod(
                 defaultForScopeOnThisFunction,
-                UIBridge.focusedMethod?.currentSignature ?: "no method selected"
+                UIBridge.currentMethod?.currentSignature ?: "no method selected"
             )
         return out
     }
 
     protected abstract fun processUnit(unit: IDexUnit, renameEngine: RenameEngine)
-    protected fun processOptions(executionOptions: Map<String, String>) {
+
+    protected open fun processOptions(executionOptions: Map<String, String>): Boolean {
         if (supportsClassFilter)
             classFilter = Regex(executionOptions[ClassFilterOptionTag].orIfBlank(ClassFilterDefault))
         if (defaultForScopeOnThisClass != null)
@@ -67,5 +79,6 @@ abstract class BasicEnginesPlugin(
         if (defaultForScopeOnThisFunction != null)
             isOperatingOnlyOnThisMethod =
                 executionOptions[ScopeThisMethodTag].orIfBlank(defaultForScopeOnThisFunction.toString()).toBoolean()
+        return true
     }
 }

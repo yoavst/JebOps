@@ -14,8 +14,15 @@ object UIBridge {
     var focusedClass: IDexType? = null
         private set
 
+    var currentMethod: IDexMethod? = null
+        private set
+    var currentClass: IDexType? = null
+        private set
+
     fun update(context: IGraphicalClientContext) {
         focusedMethod = context.currentFocusedMethod()
         focusedClass = context.currentFocusedType()
+        currentMethod = context.currentFocusedMethod(supportFocus = false, verbose = false)
+        currentClass = context.currentFocusedType(supportFocus = false, verbose = false)
     }
 }

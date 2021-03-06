@@ -8,7 +8,9 @@ const val ClassFilterDefault = ".*"
 
 const val ClassFilterOptionTag = "Class filter"
 val ClassFilterOption: IOptionDefinition = OptionDefinition(
-    ClassFilterOptionTag, """The operation you are about to perform may be costly, and cannot be interrupted.
+    ClassFilterOptionTag,
+    ClassFilterDefault,
+    """The operation you are about to perform may be costly, and cannot be interrupted.
 If you only want to run it only on specific classes, you can specify a regex.
 For example, if you only want to run it on default package, use "^L[^\/]*;$"
 Or if you want to run it on package com.test use "^Lcom\/test\/.*;$"
@@ -44,3 +46,6 @@ fun scopeThisMethod(default: Boolean = true, methodSignature: String? = null): I
         )
     }
 }
+
+fun usingThisMethod(methodSignature: String? = null) = OptionDefinition("Selected method: $methodSignature")
+fun usingThisClass(methodSignature: String? = null) = OptionDefinition("Selected class: $methodSignature")

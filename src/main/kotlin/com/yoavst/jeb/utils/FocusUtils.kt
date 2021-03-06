@@ -17,7 +17,7 @@ private class FocusUtils
 
 private val logger: ILogger = GlobalLog.getLogger(FocusUtils::class.java)
 
-fun IGraphicalClientContext.currentFocusedMethod(verbose: Boolean = true): IDexMethod? {
+fun IGraphicalClientContext.currentFocusedMethod(supportFocus: Boolean = true, verbose: Boolean = true): IDexMethod? {
     val fragment = focusedFragment
     var address = fragment?.activeAddress
     if (fragment == null || address == null) {
@@ -49,17 +49,19 @@ fun IGraphicalClientContext.currentFocusedMethod(verbose: Boolean = true): IDexM
     }
 
     // try selected item first
-    val item = fragment.activeItem
-    if (item is AssemblyItem && item.classId == ItemClassIdentifiers.METHOD_NAME) {
-        val selectedMethod = unit.getItemObject(item.itemId)
-        if (selectedMethod == null) {
-            logger.error("Cannot get selected method: $fragment")
-            return null
-        } else if (selectedMethod !is IDexMethod) {
-            logger.error("Selected method is not dex: $selectedMethod")
-            return null
+    if (supportFocus) {
+        val item = fragment.activeItem
+        if (item is AssemblyItem && item.classId == ItemClassIdentifiers.METHOD_NAME) {
+            val selectedMethod = unit.getItemObject(item.itemId)
+            if (selectedMethod == null) {
+                logger.error("Cannot get selected method: $fragment")
+                return null
+            } else if (selectedMethod !is IDexMethod) {
+                logger.error("Selected method is not dex: $selectedMethod")
+                return null
+            }
+            return selectedMethod
         }
-        return selectedMethod
     }
 
     // fallback to select current method
@@ -94,7 +96,7 @@ fun IGraphicalClientContext.currentFocusedMethod(verbose: Boolean = true): IDexM
     }
 }
 
-fun IGraphicalClientContext.currentFocusedType(verbose: Boolean = true): IDexType? {
+fun IGraphicalClientContext.currentFocusedType(supportFocus: Boolean = true, verbose: Boolean = true): IDexType? {
     val fragment = focusedFragment
     var address = fragment?.activeAddress
     if (fragment == null || address == null) {
@@ -126,30 +128,32 @@ fun IGraphicalClientContext.currentFocusedType(verbose: Boolean = true): IDexTyp
     }
 
     // try selected item first
-    val item = fragment.activeItem
-    if (item is AssemblyItem) {
-        if (item.classId == ItemClassIdentifiers.CLASS_NAME) {
-            return when (val selectedClass = unit.getItemObject(item.itemId)) {
-                null -> {
-                    logger.error("Cannot get selected class: $fragment")
-                    null
+    if (supportFocus) {
+        val item = fragment.activeItem
+        if (item is AssemblyItem) {
+            if (item.classId == ItemClassIdentifiers.CLASS_NAME) {
+                return when (val selectedClass = unit.getItemObject(item.itemId)) {
+                    null -> {
+                        logger.error("Cannot get selected class: $fragment")
+                        null
+                    }
+                    is IDexClass -> selectedClass.classType as? IDexType
+                    else -> {
+                        logger.error("Selected class is not dex: $selectedClass")
+                        null
+                    }
                 }
-                is IDexClass -> selectedClass.classType as? IDexType
-                else -> {
-                    logger.error("Selected class is not dex: $selectedClass")
-                    null
-                }
-            }
-        } else if (item.classId == ItemClassIdentifiers.EXTERNAL_CLASS_NAME) {
-            return when (val selectedType = unit.getItemObject(item.itemId)) {
-                null -> {
-                    logger.error("Cannot get selected type: $fragment")
-                    null
-                }
-                is IDexType -> selectedType
-                else -> {
-                    logger.error("Selected type is not dex: $selectedType")
-                    null
+            } else if (item.classId == ItemClassIdentifiers.EXTERNAL_CLASS_NAME) {
+                return when (val selectedType = unit.getItemObject(item.itemId)) {
+                    null -> {
+                        logger.error("Cannot get selected type: $fragment")
+                        null
+                    }
+                    is IDexType -> selectedType
+                    else -> {
+                        logger.error("Selected type is not dex: $selectedType")
+                        null
+                    }
                 }
             }
         }

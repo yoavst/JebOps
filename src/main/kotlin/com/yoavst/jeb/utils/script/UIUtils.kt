@@ -10,7 +10,7 @@ object UIUtils {
     private const val OptionsDialogClass = "com.pnfsoftware.jeb.rcpclient.dialogs.OptionsForEnginesPluginDialog"
 
     fun openOptionsForPlugin(plugin: BasicEnginesPlugin): Map<String, String>? {
-        val shell = Display.getDefault()?.shells?.getOrNull(0)
+        val shell = Display.getDefault()?.activeShell
         if (shell == null) {
             logger.error("No available SWT shells, cannot open options dialog.")
             return null
