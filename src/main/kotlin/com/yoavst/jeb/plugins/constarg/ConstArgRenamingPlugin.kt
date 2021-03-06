@@ -25,6 +25,7 @@ class ConstArgRenamingPlugin :
     private var renamedArgumentIndex by Delegates.notNull<Int>()
     private lateinit var renameMethod: IDexMethod
     private lateinit var renamer: (String) -> RenameResult
+    private var effectedMethods: MutableMap<IJavaMethod, IDexClass> = mutableMapOf()
 
     override fun getPluginInformation(): IPluginInformation = PluginInformation(
         "Const arg renaming plugin",
@@ -117,6 +118,8 @@ class ConstArgRenamingPlugin :
     }
 
     override fun processUnit(unit: IDexUnit, renameEngine: RenameEngine) {
+        effectedMethods.clear()
+
         val decompiler = unit.decompiler
         if (isOperatingOnlyOnThisMethod) {
             if (UIBridge.currentMethod != null && UIBridge.currentClass != null) {
@@ -134,26 +137,34 @@ class ConstArgRenamingPlugin :
 
         }
 
+        effectedMethods.forEach { (method, cls) ->
+            SimpleIdentifierPropagationTraversal(cls, renameEngine).traverse(method.body)
+        }
 
         propagateRenameToGetterAndSetters(unit, renameEngine.stats.effectedClasses, renameEngine)
         unit.refresh()
     }
 
     private fun processMethod(
-        method: IDexMethod,
-        unit: IDexUnit,
-        decompiler: IDexDecompilerUnit,
+        method: IDexMethod, unit: IDexUnit, decompiler: IDexDecompilerUnit,
         renameEngine: RenameEngine
     ) {
         val decompiledMethod = decompiler.decompileDexMethod(method) ?: run {
             logger.warning("Failed to decompile method: ${method.currentSignature}")
             return
         }
-        ConstArgRenamingTraversal(method, method.classType.implementingClass!!, unit, renameEngine).traverse(decompiledMethod.body)
+        ConstArgRenamingTraversal(
+            method,
+            decompiledMethod,
+            method.classType.implementingClass!!,
+            unit,
+            renameEngine
+        ).traverse(decompiledMethod.body)
     }
 
     private inner class ConstArgRenamingTraversal(
         private val method: IDexMethod,
+        private val javaMethod: IJavaMethod,
         private val cls: IDexClass,
         private val unit: IDexUnit,
         renameEngine: RenameEngine
@@ -235,8 +246,10 @@ class ConstArgRenamingPlugin :
                 }
                 else -> {
                     logger.debug("Unsupported argument type: ${element.elementType}")
+                    return
                 }
             }
+            effectedMethods[javaMethod] = cls
         }
     }
 
