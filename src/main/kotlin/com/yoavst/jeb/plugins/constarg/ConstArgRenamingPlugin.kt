@@ -11,6 +11,7 @@ import com.yoavst.jeb.utils.*
 import com.yoavst.jeb.utils.renaming.RenameEngine
 import com.yoavst.jeb.utils.renaming.RenameReason
 import com.yoavst.jeb.utils.renaming.RenameRequest
+import java.io.File
 import kotlin.properties.Delegates
 
 class ConstArgRenamingPlugin :
@@ -91,11 +92,11 @@ class ConstArgRenamingPlugin :
                 if (tmp != null)
                     renamedArgumentIndex = tmp
 
-                val script = displayFileOpenSelector("Renaming script") ?: run {
+                val scriptPath = displayFileOpenSelector("Renaming script") ?: run {
                     logger.error("No script selected")
                     return false
                 }
-                scriptRenamer(script)
+                scriptRenamer(File(scriptPath).readText())
             }
             RenameTarget.Class -> classRenamer
             RenameTarget.Method -> methodRenamer
@@ -110,8 +111,8 @@ class ConstArgRenamingPlugin :
                 }
                 argumentRenamer
             }
-            RenameTarget.Asignee -> {
-                asigneeRenamer
+            RenameTarget.Assignee -> {
+                assigneeRenamer
             }
         }
         return true
@@ -128,9 +129,11 @@ class ConstArgRenamingPlugin :
             }
         } else {
             val methods = unit.xrefsFor(renameMethod).mapTo(mutableSetOf(), unit::getMethod)
-            var seq = methods.asSequence().filter { classFilter.matches(it.classType.implementingClass) }
-            if (isOperatingOnlyOnThisClass) {
-                seq = seq.filter { it.classType == UIBridge.currentClass }
+            var seq = methods.asSequence()
+            seq = if (isOperatingOnlyOnThisClass) {
+                seq.filter { it.classType == UIBridge.currentClass }
+            } else {
+                seq.filter { classFilter.matches(it.classType.implementingClass) }
             }
 
             seq.forEach { processMethod(it, unit, decompiler, renameEngine) }
@@ -149,6 +152,7 @@ class ConstArgRenamingPlugin :
         method: IDexMethod, unit: IDexUnit, decompiler: IDexDecompilerUnit,
         renameEngine: RenameEngine
     ) {
+        logger.trace("Processing: ${method.currentSignature}")
         val decompiledMethod = decompiler.decompileDexMethod(method) ?: run {
             logger.warning("Failed to decompile method: ${method.currentSignature}")
             return
@@ -173,28 +177,31 @@ class ConstArgRenamingPlugin :
         private val renamedSignature: String = renameMethod.getSignature(false)
         override fun traverseNonCompound(statement: IStatement) {
             if (statement is IJavaAssignment) {
-                traverseElement(statement.right, statement.left)
+                // Don't crash on: "Object x;"
+                statement.right?.let { right ->
+                    traverseElement(right, statement.left)
+                }
             } else {
                 traverseElement(statement, null)
             }
         }
 
-        private fun traverseElement(element: IJavaElement, asignee: IJavaLeftExpression? = null): Unit = when {
+        private fun traverseElement(element: IJavaElement, assignee: IJavaLeftExpression? = null): Unit = when {
             element is IJavaCall && element.methodSignature == renamedSignature -> {
                 // we found the method we were looking for!
-                processMatchedMethod(asignee, element::getRealArgument)
+                processMatchedMethod(assignee, element::getRealArgument)
             }
             element is IJavaNew && element.constructor.signature == renamedSignature -> {
                 // the method we were looking for was a constructor
-                processMatchedMethod(asignee) { element.arguments[it] }
+                processMatchedMethod(assignee) { element.arguments[it] }
             }
             else -> {
                 // Try sub elements
-                element.subElements.forEach { traverseElement(it, asignee) }
+                element.subElements.forEach { traverseElement(it, assignee) }
             }
         }
 
-        private inline fun processMatchedMethod(asignee: IJavaLeftExpression?, getArg: (Int) -> IJavaElement) {
+        private inline fun processMatchedMethod(assignee: IJavaLeftExpression?, getArg: (Int) -> IJavaElement) {
             val nameArg = getArg(constArgumentIndex)
             if (nameArg is IJavaConstant && nameArg.isString) {
                 val result = renamer(nameArg.string)
@@ -217,8 +224,8 @@ class ConstArgRenamingPlugin :
                 if (!result.argumentName.isNullOrEmpty()) {
                     renameElement(getArg(renamedArgumentIndex), result.argumentName)
                 }
-                if (!result.assigneeName.isNullOrEmpty() && asignee != null) {
-                    renameElement(asignee, result.assigneeName)
+                if (!result.assigneeName.isNullOrEmpty() && assignee != null) {
+                    renameElement(assignee, result.assigneeName)
                 }
             }
         }

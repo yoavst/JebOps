@@ -15,7 +15,8 @@ def launch_plugin(plugin, ctx, loader):
             if not opts:
                 print "Plugin opening aborted"
                 return
-            plugin.execute(ctx.getEnginesContext())
+
+            plugin.execute(ctx.getEnginesContext(), opts)
             loader.close()
 
     UIUtils.runOnMainThread(RunnableClass())

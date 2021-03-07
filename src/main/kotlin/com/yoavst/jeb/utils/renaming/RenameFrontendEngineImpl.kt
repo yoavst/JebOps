@@ -51,6 +51,15 @@ object RenameFrontendEngineImpl : RenameFrontendEngine {
                 reason,
                 informationalRename
             )
+        } else if (type == RenameObjectType.Identifier) {
+            // We want to erase the previous name since it isn't a real name
+            return InternalRenameRequest(
+                type,
+                currentName,
+                "__${reason.prefix}_${newNameSanitized}",
+                reason,
+                informationalRename
+            )
         } else {
             return InternalRenameRequest(
                 type,

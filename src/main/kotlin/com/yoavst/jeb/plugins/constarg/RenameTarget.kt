@@ -1,5 +1,5 @@
 package com.yoavst.jeb.plugins.constarg
 
 enum class RenameTarget {
-    Class, Method, Argument, Asignee, Custom
+    Class, Method, Argument, Assignee, Custom
 }
