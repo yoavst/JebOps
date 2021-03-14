@@ -34,8 +34,10 @@ abstract class BasicEnginesPlugin(
 
         if (!processOptions(executionOptions ?: mapOf())) return
 
-        val renameEngine = RenameEngine.create()
+        if (!preProcess()) return
+
         context.getDexUnits().forEach {
+            val renameEngine = RenameEngine.create()
             processUnit(it, renameEngine)
             it.refresh()
             logger.status("Finished executing plugin ${this::class.simpleName} on unit: $it")
@@ -67,6 +69,8 @@ abstract class BasicEnginesPlugin(
             )
         return out
     }
+
+    protected open fun preProcess(): Boolean = true
 
     protected abstract fun processUnit(unit: IDexUnit, renameEngine: RenameEngine)
 

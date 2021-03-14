@@ -8,6 +8,8 @@ private object ClassUtils
 
 private val logger = GlobalLog.getLogger(ClassUtils::class.java)
 
+fun IDexUnit.classBySignature(classSignature: String) = classes.firstOrNull { it.currentSignature == classSignature }
+
 fun IDexUnit.subclassesOf(classSignature: String): Sequence<IDexClass> {
     val classesWithGivenName = types.filter { it.signature == classSignature }
     if (classesWithGivenName.isEmpty()) {
