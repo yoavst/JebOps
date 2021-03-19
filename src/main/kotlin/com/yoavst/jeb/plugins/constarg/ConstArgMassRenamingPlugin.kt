@@ -1,8 +1,6 @@
 package com.yoavst.jeb.plugins.constarg
 
-import com.pnfsoftware.jeb.core.IPluginInformation
-import com.pnfsoftware.jeb.core.PluginInformation
-import com.pnfsoftware.jeb.core.Version
+import com.pnfsoftware.jeb.core.*
 import com.pnfsoftware.jeb.core.units.code.android.IDexUnit
 import com.yoavst.jeb.bridge.UIBridge
 import com.yoavst.jeb.utils.BasicEnginesPlugin
@@ -27,19 +25,33 @@ class ConstArgMassRenamingPlugin :
         null
     )
 
+    override fun getExecutionOptionDefinitions(): List<IOptionDefinition> {
+        return super.getExecutionOptionDefinitions() + BooleanOptionDefinition(
+            USE_BUILTIN,
+            true,
+            """Use the builtin method signature list. It supports Bundle, Intent, ContentValues and shared preferences.
+If you have a suggestion to add to the global list, Please contact Yoav Sternberg."""
+        )
+    }
+
     override fun processOptions(executionOptions: Map<String, String>): Boolean {
         super.processOptions(executionOptions)
 
-        val scriptPath = File(displayFileOpenSelector("Signatures file") ?: run {
-            logger.error("No script selected")
-            return false
-        })
+        if (!executionOptions.getOrDefault(USE_BUILTIN, "true").toBoolean()) {
+            val scriptPath = File(displayFileOpenSelector("Signatures file") ?: run {
+                logger.error("No script selected")
+                return false
+            })
 
-        try {
-            signatures = RenameSignaturesFileParser.parseSignatures(scriptPath.readText(), scriptPath.absoluteFile.parent)
-        } catch (e: RuntimeException) {
-            logger.catching(e, "Failed to parse signature file")
-            return false
+            try {
+                signatures = RenameSignaturesFileParser.parseSignatures(scriptPath.readText(), scriptPath.absoluteFile.parent)
+            } catch (e: RuntimeException) {
+                logger.catching(e, "Failed to parse signature file")
+                return false
+            }
+        } else {
+            signatures =
+                RenameSignaturesFileParser.parseSignatures(javaClass.classLoader.getResource("rename_signatures.md")!!.readText(), ".")
         }
         return true
     }
@@ -59,5 +71,9 @@ class ConstArgMassRenamingPlugin :
         }
 
         massRenamer.propagate(unit, renameEngine)
+    }
+
+    companion object {
+        private const val USE_BUILTIN = "use builtin"
     }
 }
