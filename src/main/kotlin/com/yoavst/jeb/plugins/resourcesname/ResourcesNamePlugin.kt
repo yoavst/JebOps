@@ -12,6 +12,8 @@ import com.pnfsoftware.jeb.util.collect.MultiMap
 import com.yoavst.jeb.bridge.UIBridge
 import com.yoavst.jeb.utils.*
 import com.yoavst.jeb.utils.renaming.RenameEngine
+import com.yoavst.jeb.utils.renaming.RenameReason
+import com.yoavst.jeb.utils.renaming.RenameRequest
 import org.w3c.dom.Document
 import java.io.InputStream
 import javax.xml.parsers.DocumentBuilderFactory
@@ -66,13 +68,26 @@ class ResourcesNamePlugin : BasicEnginesPlugin(
             }
         } else if (isOperatingOnlyOnThisClass) {
             if (UIBridge.currentClass != null) {
-                UIBridge.currentClass!!.implementingClass.methods.forEach { method ->
+                UIBridge.currentClass!!.implementingClass!!.methods.forEach { method ->
                     preProcessMethod(method, unit, decompiler, renameEngine)
                 }
+                processClass(UIBridge.currentClass!!.implementingClass!!, decompiler, renameEngine)
             }
         } else {
-            unit.classes.asSequence().filter(classFilter::matches).flatMap(IDexClass::getMethods)
+            unit.classes.asSequence().filter(classFilter::matches).onEach {
+                processClass(it, decompiler, renameEngine)
+            }.flatMap(IDexClass::getMethods)
                 .forEach { preProcessMethod(it, unit, decompiler, renameEngine) }
+        }
+    }
+
+    private fun processClass(cls: IDexClass, decompiler: IDexDecompilerUnit, renameEngine: RenameEngine) {
+        // check if we have a static field which is a resource
+        cls.fields.asSequence().filter { it.staticInitializer?.type == IDexValue.VALUE_INT }.forEach { field ->
+            val intValue = field.staticInitializer!!.int
+            val res = intToResourceId[intValue] ?: return@forEach
+            val decompiledField = decompiler.decompileDexField(field) ?: return@forEach
+            renameEngine.renameField(RenameRequest(res.name, RenameReason.Resource), decompiledField, cls)
         }
     }
 

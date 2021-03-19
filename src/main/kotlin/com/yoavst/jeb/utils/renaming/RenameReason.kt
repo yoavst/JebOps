@@ -8,6 +8,7 @@ enum class RenameReason(val prefix: String) : Comparable<RenameReason> {
     Type("T"),
     FieldName("F"),
     Log("L"),
+    Resource("R"),
     MethodStringArgument("A"),
     ToString("TS"),
     EnumName("E"),
