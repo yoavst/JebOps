@@ -20,6 +20,7 @@ jar {
     manifest {
         attributes(
                 "JebPlugin-entryclass": ["com.yoavst.jeb.plugins.constarg.ConstArgRenamingPlugin",
+                                         "com.yoavst.jeb.plugins.constarg.ConstArgMassRenamingPlugin",
                                          "com.yoavst.jeb.plugins.enumsupport.EnumRenamingPlugin",
                                          "com.yoavst.jeb.plugins.resourcesname.ResourcesNamePlugin",
                                          "com.yoavst.jeb.plugins.tostring.ToStringRenamingPlugin"].join(" "),

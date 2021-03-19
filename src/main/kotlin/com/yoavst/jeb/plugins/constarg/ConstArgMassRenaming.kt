@@ -12,6 +12,9 @@ import com.yoavst.jeb.utils.*
 import com.yoavst.jeb.utils.renaming.RenameEngine
 import com.yoavst.jeb.utils.renaming.RenameReason
 import com.yoavst.jeb.utils.renaming.RenameRequest
+import java.lang.Exception
+import java.lang.IllegalArgumentException
+import kotlin.math.log
 
 class ConstArgMassRenaming(
     private val renamers: Map<String, ExtendedRenamer>,
@@ -78,11 +81,16 @@ class ConstArgMassRenaming(
         private fun traverseElement(element: IJavaElement, assignee: IJavaLeftExpression? = null): Unit = when {
             element is IJavaCall && element.methodSignature in renamers -> {
                 // we found the method we were looking for!
-                processMatchedMethod(assignee, renamers[element.methodSignature]!!, element::getRealArgument)
+                try {
+                    processMatchedMethod(assignee, renamers[element.methodSignature]!!, element::getRealArgument)
+                } catch (e: Exception) {
+                    logger.error("Failed for ${element.methodSignature}")
+                    throw e
+                }
             }
-            element is IJavaNew && element.constructor.signature in renamers -> {
+            element is IJavaNew && element.constructorSignature in renamers -> {
                 // the method we were looking for was a constructor
-                processMatchedMethod(assignee, renamers[element.constructor.signature]!!) { element.arguments[it] }
+                processMatchedMethod(assignee, renamers[element.constructorSignature]!!) { element.arguments[it] }
             }
             else -> {
                 // Try sub elements
@@ -111,7 +119,10 @@ class ConstArgMassRenaming(
                     )
                 }
                 if (!result.argumentName.isNullOrEmpty()) {
-                    renameElement(getArg(match.renamedArgumentIndex!!), result.argumentName)
+                    if (match.renamedArgumentIndex == null) {
+                        throw IllegalArgumentException("Forget to put renamed argument index")
+                    }
+                    renameElement(getArg(match.renamedArgumentIndex), result.argumentName)
                 }
                 if (!result.assigneeName.isNullOrEmpty() && assignee != null) {
                     renameElement(assignee, result.assigneeName)
@@ -139,6 +150,15 @@ class ConstArgMassRenaming(
                 }
                 is IJavaIdentifier -> {
                     renameEngine.renameIdentifier(request, element, unit)
+                }
+                is IJavaCall -> {
+                    // maybe toString or valueOf on argument
+                    if (element.methodName == "toString" || element.methodName == "valueOf") {
+                        renameElement(element.getArgument(0), name)
+                    } else {
+                        logger.debug("Unsupported call - not toString or valueOf: $element")
+                        return
+                    }
                 }
                 else -> {
                     logger.debug("Unsupported argument type: ${element.elementType}")

@@ -20,6 +20,10 @@ fun scriptRenamer(script: String): (String) -> RenameResult {
             '''Split the string using separator. Result array will be at least the given length.'''
             arr = s.split(sep)
             return arr + [""]*(at_least-len(arr))
+        
+        def underscore_to_camelcase(word):
+            return ''.join(x.capitalize() or '_' for x in word.split('_'))
+        
     """.trimIndent()
         )
     }

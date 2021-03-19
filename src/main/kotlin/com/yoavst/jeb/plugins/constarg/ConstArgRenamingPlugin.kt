@@ -108,9 +108,7 @@ class ConstArgRenamingPlugin :
                 }
                 argumentRenamer
             }
-            RenameTarget.Assignee -> {
-                assigneeRenamer
-            }
+            RenameTarget.Assignee -> assigneeRenamer
         }
         return true
     }

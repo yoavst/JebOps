@@ -9,14 +9,17 @@ private class UIUtils
 private val logger = GlobalLog.getLogger(UIUtils::class.java)
 
 fun displayFileOpenSelector(caption: String): String? {
-    val shell = Display.getDefault()?.activeShell
-    if (shell == null) {
-        logger.error("No available SWT shells, cannot open file dialog.")
-        return null
+    var result: String? = null
+    Display.getDefault().syncExec {
+        val shell = Display.getDefault()?.activeShell
+        if (shell == null) {
+            logger.error("No available SWT shells, cannot open file dialog.")
+            return@syncExec
+        }
+
+        val dlg = FileDialog(shell, 4096)
+        dlg.text = caption.orIfBlank("Open a file...")
+        result = dlg.open()
     }
-
-    val dlg = FileDialog(shell, 4096)
-    dlg.text = caption.orIfBlank("Open a file...")
-    return dlg.open()
-
+    return result
 }

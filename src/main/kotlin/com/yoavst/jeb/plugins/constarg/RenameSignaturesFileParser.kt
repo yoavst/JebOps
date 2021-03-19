@@ -12,7 +12,7 @@ import java.io.File
  * you can use # for comments
  */
 object RenameSignaturesFileParser {
-    fun parseSignatures(signatures: String): Map<String, ExtendedRenamer> = signatures.lineSequence().map {
+    fun parseSignatures(signatures: String, basePath: String): Map<String, ExtendedRenamer> = signatures.lineSequence().map {
         it.substringBefore("#").trim()
     }.filter(String::isNotEmpty).associate {
         val split = it.split(" ", limit = 5)
@@ -30,19 +30,27 @@ object RenameSignaturesFileParser {
                 }
                 val renamedArgIndex =
                     split[3].toIntOrNull() ?: throw IllegalArgumentException("Invalid line, renamed argument is not int: '$it'")
-                ExtendedRenamer(constArgIndex, classRenamer, renamedArgIndex)
+                ExtendedRenamer(constArgIndex, argumentRenamer, renamedArgIndex)
             }
             RenameTarget.Assignee -> ExtendedRenamer(constArgIndex, assigneeRenamer)
             RenameTarget.Custom -> {
-                if (split.size >= 3) {
+                if (split.size < 4) {
                     throw IllegalArgumentException("Invalid line, no custom path: '$it'")
+                }
+                val filename = split[3]
+                val script = if (filename.startsWith("jar:")) {
+                    javaClass.classLoader.getResourceAsStream(filename.substringAfter("jar:"))?.bufferedReader()?.readText() ?: run {
+                        throw IllegalArgumentException("Invalid line, no such file in jar: '$it'")
+                    }
+                } else {
+                    File(basePath, split[3]).readText()
                 }
                 if (split.size == 5) {
                     val renamedArgIndex =
                         split[4].toIntOrNull() ?: throw IllegalArgumentException("Invalid line, renamed argument is not int: '$it'")
-                    ExtendedRenamer(constArgIndex, scriptRenamer(File(split[2]).readText()), renamedArgIndex)
+                    ExtendedRenamer(constArgIndex, scriptRenamer(script), renamedArgIndex)
                 } else {
-                    ExtendedRenamer(constArgIndex, scriptRenamer(File(split[2]).readText()))
+                    ExtendedRenamer(constArgIndex, scriptRenamer(script))
                 }
             }
         }

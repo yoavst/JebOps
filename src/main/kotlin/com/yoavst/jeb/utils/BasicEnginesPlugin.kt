@@ -26,22 +26,26 @@ abstract class BasicEnginesPlugin(
     protected var isOperatingOnlyOnThisMethod: Boolean by Delegates.notNull()
 
     override fun execute(context: IEnginesContext, executionOptions: MutableMap<String, String>?) {
-        this.context = context
-        if (context.projects.isEmpty()) {
-            logger.error("Error: Please open a project!")
-            return
-        }
+        try {
+            this.context = context
+            if (context.projects.isEmpty()) {
+                logger.error("Error: Please open a project!")
+                return
+            }
 
-        if (!processOptions(executionOptions ?: mapOf())) return
+            if (!processOptions(executionOptions ?: mapOf())) return
 
-        if (!preProcess()) return
+            if (!preProcess()) return
 
-        context.getDexUnits().forEach {
-            val renameEngine = RenameEngine.create()
-            processUnit(it, renameEngine)
-            it.refresh()
-            logger.error("Finished executing plugin ${this::class.simpleName} on unit: $it")
-            logger.error(renameEngine.toString())
+            context.getDexUnits().forEach {
+                val renameEngine = RenameEngine.create()
+                processUnit(it, renameEngine)
+                it.refresh()
+                logger.error("Finished executing plugin ${this::class.simpleName} on unit: $it")
+                logger.error(renameEngine.toString())
+            }
+        } catch (e: Exception) {
+            logger.catching(e)
         }
     }
 
