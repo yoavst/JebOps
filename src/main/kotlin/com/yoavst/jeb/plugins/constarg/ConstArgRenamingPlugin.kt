@@ -1,16 +1,14 @@
 package com.yoavst.jeb.plugins.constarg
 
 import com.pnfsoftware.jeb.core.*
-import com.pnfsoftware.jeb.core.units.code.android.IDexDecompilerUnit
 import com.pnfsoftware.jeb.core.units.code.android.IDexUnit
-import com.pnfsoftware.jeb.core.units.code.android.dex.IDexClass
 import com.pnfsoftware.jeb.core.units.code.android.dex.IDexMethod
-import com.pnfsoftware.jeb.core.units.code.java.*
 import com.yoavst.jeb.bridge.UIBridge
-import com.yoavst.jeb.utils.*
+import com.yoavst.jeb.utils.BasicEnginesPlugin
+import com.yoavst.jeb.utils.decompiler
+import com.yoavst.jeb.utils.displayFileOpenSelector
+import com.yoavst.jeb.utils.originalSignature
 import com.yoavst.jeb.utils.renaming.RenameEngine
-import com.yoavst.jeb.utils.renaming.RenameReason
-import com.yoavst.jeb.utils.renaming.RenameRequest
 import java.io.File
 import kotlin.properties.Delegates
 
@@ -23,10 +21,9 @@ class ConstArgRenamingPlugin :
     ) {
 
     private var constArgumentIndex by Delegates.notNull<Int>()
-    private var renamedArgumentIndex by Delegates.notNull<Int>()
+    private var renamedArgumentIndex = -1
     private lateinit var renameMethod: IDexMethod
     private lateinit var renamer: (String) -> RenameResult
-    private var effectedMethods: MutableMap<IJavaMethod, IDexClass> = mutableMapOf()
 
     override fun getPluginInformation(): IPluginInformation = PluginInformation(
         "Const arg renaming plugin",
@@ -119,189 +116,23 @@ class ConstArgRenamingPlugin :
     }
 
     override fun processUnit(unit: IDexUnit, renameEngine: RenameEngine) {
-        effectedMethods.clear()
+        val massRenamer = ConstArgMassRenaming(
+            mapOf(
+                renameMethod.getSignature(false) to ExtendedRenamer(constArgumentIndex, renamer, renamedArgumentIndex)
+            ), isOperatingOnlyOnThisClass, classFilter
+        )
 
-        val decompiler = unit.decompiler
         if (isOperatingOnlyOnThisMethod) {
             if (UIBridge.currentMethod != null && UIBridge.currentClass != null) {
                 // you cannot see the sources of a type without implementing class
-                processMethod(UIBridge.currentMethod!!, unit, decompiler, renameEngine)
+                massRenamer.processMethod(UIBridge.currentMethod!!, unit, unit.decompiler, renameEngine)
             }
         } else {
-            val methods = unit.xrefsFor(renameMethod).mapTo(mutableSetOf(), unit::getMethod)
-            var seq = methods.asSequence()
-            seq = if (isOperatingOnlyOnThisClass) {
-                seq.filter { it.classType == UIBridge.currentClass }
-            } else {
-                seq.filter { classFilter.matches(it.classType.implementingClass) }
-            }
-
-            seq.forEach { processMethod(it, unit, decompiler, renameEngine) }
-
+            massRenamer.processUnit(unit, renameEngine)
         }
 
-        effectedMethods.forEach { (method, cls) ->
-            SimpleIdentifierPropagationTraversal(cls, renameEngine).traverse(method.body)
-        }
-
-        propagateRenameToGetterAndSetters(unit, renameEngine.stats.effectedClasses, renameEngine)
-        unit.refresh()
+        massRenamer.propagate(unit, renameEngine)
     }
-
-    private fun processMethod(
-        method: IDexMethod, unit: IDexUnit, decompiler: IDexDecompilerUnit,
-        renameEngine: RenameEngine
-    ) {
-        logger.trace("Processing: ${method.currentSignature}")
-        val decompiledMethod = decompiler.decompileDexMethod(method) ?: run {
-            logger.warning("Failed to decompile method: ${method.currentSignature}")
-            return
-        }
-        ConstArgRenamingTraversal(
-            method,
-            decompiledMethod,
-            method.classType.implementingClass!!,
-            unit,
-            renameEngine
-        ).traverse(decompiledMethod.body)
-    }
-
-    private inner class ConstArgRenamingTraversal(
-        private val method: IDexMethod,
-        private val javaMethod: IJavaMethod,
-        private val cls: IDexClass,
-        private val unit: IDexUnit,
-        renameEngine: RenameEngine
-    ) :
-        BasicAstTraversal(renameEngine) {
-        private val renamedSignature: String = renameMethod.getSignature(false)
-        override fun traverseNonCompound(statement: IStatement) {
-            if (statement is IJavaAssignment) {
-                // Don't crash on: "Object x;"
-                statement.right?.let { right ->
-                    traverseElement(right, statement.left)
-                }
-            } else {
-                traverseElement(statement, null)
-            }
-        }
-
-        private fun traverseElement(element: IJavaElement, assignee: IJavaLeftExpression? = null): Unit = when {
-            element is IJavaCall && element.methodSignature == renamedSignature -> {
-                // we found the method we were looking for!
-                processMatchedMethod(assignee, element::getRealArgument)
-            }
-            element is IJavaNew && element.constructor.signature == renamedSignature -> {
-                // the method we were looking for was a constructor
-                processMatchedMethod(assignee) { element.arguments[it] }
-            }
-            else -> {
-                // Try sub elements
-                element.subElements.forEach { traverseElement(it, assignee) }
-            }
-        }
-
-        private inline fun processMatchedMethod(assignee: IJavaLeftExpression?, getArg: (Int) -> IJavaElement) {
-            val nameArg = getArg(constArgumentIndex)
-            if (nameArg is IJavaConstant && nameArg.isString) {
-                val result = renamer(nameArg.string)
-                if (!result.className.isNullOrEmpty()) {
-                    renameEngine.renameClass(
-                        RenameRequest(
-                            result.className,
-                            RenameReason.MethodStringArgument
-                        ), cls
-                    )
-                }
-                if (!result.methodName.isNullOrEmpty()) {
-                    renameEngine.renameMethod(
-                        RenameRequest(
-                            result.methodName,
-                            RenameReason.MethodStringArgument
-                        ), method, cls
-                    )
-                }
-                if (!result.argumentName.isNullOrEmpty()) {
-                    renameElement(getArg(renamedArgumentIndex), result.argumentName)
-                }
-                if (!result.assigneeName.isNullOrEmpty() && assignee != null) {
-                    renameElement(assignee, result.assigneeName)
-                }
-            }
-        }
-
-        private fun renameElement(element: IJavaElement, name: String) {
-            val request = RenameRequest(name, RenameReason.MethodStringArgument)
-            when (element) {
-                is IJavaDefinition -> renameElement(element.identifier, name)
-                is IJavaStaticField -> {
-                    val field = element.field ?: run {
-                        logger.warning("Failed to get field: $element")
-                        return
-                    }
-                    renameEngine.renameField(request, field, cls)
-                }
-                is IJavaInstanceField -> {
-                    val field = element.field ?: run {
-                        logger.warning("Failed to get field: $element")
-                        return
-                    }
-                    renameEngine.renameField(request, field, cls)
-                }
-                is IJavaIdentifier -> {
-                    renameEngine.renameIdentifier(request, element, unit)
-                }
-                else -> {
-                    logger.debug("Unsupported argument type: ${element.elementType}")
-                    return
-                }
-            }
-            effectedMethods[javaMethod] = cls
-        }
-    }
-
-    /**
-     * We are going to do very simple "Identifier propagation", to support the case of:
-    this.a = anIdentifierIRecovered
-     */
-    private inner class SimpleIdentifierPropagationTraversal(private val cls: IDexClass, renameEngine: RenameEngine) :
-        BasicAstTraversal(renameEngine) {
-        override fun traverseNonCompound(statement: IStatement) {
-            if (statement is IJavaAssignment) {
-                val left = statement.left
-                val right = statement.right
-
-                if (right is IJavaIdentifier) {
-                    val renameRequest = renameEngine.stats.renamedIdentifiers[right] ?: return
-                    if (left is IJavaInstanceField) {
-                        val field = left.field ?: run {
-                            logger.warning("Failed to get field: $left")
-                            return
-                        }
-                        renameEngine.renameField(
-                            RenameRequest(
-                                renameRequest.newName,
-                                RenameReason.MethodStringArgument
-                            ), field, cls
-                        )
-                    } else if (left is IJavaStaticField) {
-                        val field = left.field ?: run {
-                            logger.warning("Failed to get field: $left")
-                            return
-                        }
-                        renameEngine.renameField(
-                            RenameRequest(
-                                renameRequest.newName,
-                                RenameReason.MethodStringArgument
-                            ), field, cls
-                        )
-                    }
-                }
-            }
-        }
-
-    }
-
 
     companion object {
         private const val TargetRenameTag = "Target rename"

@@ -40,8 +40,8 @@ abstract class BasicEnginesPlugin(
             val renameEngine = RenameEngine.create()
             processUnit(it, renameEngine)
             it.refresh()
-            logger.status("Finished executing plugin ${this::class.simpleName} on unit: $it")
-            logger.status(renameEngine.toString())
+            logger.error("Finished executing plugin ${this::class.simpleName} on unit: $it")
+            logger.error(renameEngine.toString())
         }
     }
 
