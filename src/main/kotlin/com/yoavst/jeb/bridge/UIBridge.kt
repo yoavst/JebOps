@@ -19,6 +19,7 @@ object UIBridge {
     var currentClass: IDexType? = null
         private set
 
+    @JvmStatic
     fun update(context: IGraphicalClientContext) {
         focusedMethod = context.currentFocusedMethod()
         focusedClass = context.currentFocusedType()

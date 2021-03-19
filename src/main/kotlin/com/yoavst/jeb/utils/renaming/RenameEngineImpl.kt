@@ -114,4 +114,6 @@ class RenameEngineImpl(
             stats.effectedClasses.add(cls)
         }
     }
+
+    override fun toString(): String = stats.toString()
 }
