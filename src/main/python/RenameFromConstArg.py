@@ -1,5 +1,5 @@
-# ?description=Launch the already loaded const arg rename plugin
-# ?shortcut=ctrl+shift+l
+#?description=Launch the already loaded const arg rename plugin
+#?shortcut=Mod1+Mod3+L
 import sys
 import traceback
 from com.pnfsoftware.jeb.client.api import IScript, IGraphicalClientContext

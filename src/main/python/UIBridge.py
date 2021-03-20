@@ -1,5 +1,5 @@
-# ?description=update the UIBridge class of JebPlugin
-# ?shortcut=ctrl+shift+U
+#?description=update the UIBridge class of JebPlugin
+#?shortcut=Mod1+Mod3+U
 import sys
 import traceback
 from com.pnfsoftware.jeb.client.api import IScript, IGraphicalClientContext

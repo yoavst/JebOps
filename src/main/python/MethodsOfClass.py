@@ -1,4 +1,4 @@
-# ?description=get all methods of specific class
+#?description=get all methods of specific class
 import sys
 import traceback
 from com.pnfsoftware.jeb.client.api import IScript, IGraphicalClientContext
