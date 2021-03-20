@@ -4,9 +4,10 @@ plugins {
 }
 
 group 'org.yoavst.jeb'
-version '0.1'
+version '0.1.0'
 
 repositories {
+    maven { url './offline' }
     jcenter()
 }
 
@@ -24,7 +25,7 @@ jar {
                                          "com.yoavst.jeb.plugins.enumsupport.EnumRenamingPlugin",
                                          "com.yoavst.jeb.plugins.resourcesname.ResourcesNamePlugin",
                                          "com.yoavst.jeb.plugins.tostring.ToStringRenamingPlugin"].join(" "),
-                "jebPlugin-version": "0.1.0"
+                "jebPlugin-version": project.version
         )
     }
 }

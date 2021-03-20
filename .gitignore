@@ -146,6 +146,7 @@ hs_err_pid*
 ### Gradle ###
 .gradle
 build/
+offline/
 
 # Ignore Gradle GUI config
 gradle-app.setting
