@@ -5,4 +5,4 @@ pluginManagement {
     }
 }
 
-rootProject.name = 'JebPlugin'
+rootProject.name = 'JebOps'
