@@ -11,7 +11,7 @@ Extract the provided `offline.tar.xz` to the main project's folder. You are good
 ### Compilation
 
 1. Copy `jeb.jar` and `swt.jar` from `$JEB_HOME/bin/app` to `libs/runtime/`
-2. Use `./gradlew shadowJar` to build a flat jar. It will be stored on `build/libs/JebPlugin-VERSION-all.jar`
+2. Use `./gradlew jar` to build a flat jar. It will be stored on `build/libs/JebPlugin-VERSION.jar`
 
 ## Installation
 

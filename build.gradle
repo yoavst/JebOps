@@ -1,6 +1,5 @@
 plugins {
     id 'org.jetbrains.kotlin.jvm' version '1.4.31'
-    id 'com.github.johnrengelman.shadow' version '6.1.0'
 }
 
 group 'org.yoavst.jeb'
@@ -28,13 +27,16 @@ jar {
                 "jebPlugin-version": project.version
         )
     }
+    from {
+        configurations.compile.collect { it.isDirectory() ? it : zipTree(it) }
+    }
 }
 
 dependencies {
     compileOnly fileTree(dir: 'libs/runtime', include: ['*.jar'])
     compileOnly 'org.python:jython:2.7.0'
 
-    implementation platform('org.jetbrains.kotlin:kotlin-bom')
-    implementation 'org.jetbrains.kotlin:kotlin-stdlib-jdk8'
+    compile platform('org.jetbrains.kotlin:kotlin-bom')
+    compile 'org.jetbrains.kotlin:kotlin-stdlib-jdk8'
 
 }
