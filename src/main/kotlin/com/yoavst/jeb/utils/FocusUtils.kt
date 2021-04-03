@@ -23,8 +23,8 @@ fun IGraphicalClientContext.currentFocusedMethod(supportFocus: Boolean = true, v
     if (fragment == null || address == null) {
         if (verbose) {
             logger.error(
-                "Set the focus on a UI fragment, and position the caret somewhere in the method you would like to work on\n" +
-                        "Note: If you focus it on method invocation, it is going to be that method and not the container method."
+                    "Set the focus on a UI fragment, and position the caret somewhere in the method you would like to work on\n" +
+                            "Note: If you focus it on method invocation, it is going to be that method and not the container method."
             )
         }
         return null
@@ -51,16 +51,24 @@ fun IGraphicalClientContext.currentFocusedMethod(supportFocus: Boolean = true, v
     // try selected item first
     if (supportFocus) {
         val item = fragment.activeItem
-        if (item is AssemblyItem && item.classId == ItemClassIdentifiers.METHOD_NAME) {
-            val selectedMethod = unit.getItemObject(item.itemId)
-            if (selectedMethod == null) {
-                logger.error("Cannot get selected method: $fragment")
-                return null
-            } else if (selectedMethod !is IDexMethod) {
-                logger.error("Selected method is not dex: $selectedMethod")
-                return null
+        if (item is AssemblyItem) {
+            when (item.classId) {
+                ItemClassIdentifiers.METHOD_NAME -> {
+                    val selectedMethod = unit.getItemObject(item.itemId)
+                    if (selectedMethod == null) {
+                        logger.error("Cannot get selected method: $fragment")
+                        return null
+                    } else if (selectedMethod !is IDexMethod) {
+                        logger.error("Selected method is not dex: $selectedMethod")
+                        return null
+                    }
+                    return selectedMethod
+                }
+                ItemClassIdentifiers.CLASS_NAME, ItemClassIdentifiers.EXTERNAL_CLASS_NAME -> {
+                    logger.error("Note: You cannot select a constructor from Java decompilation view. Switch to bytecode view and select the init function.")
+                    return null
+                }
             }
-            return selectedMethod
         }
     }
 
@@ -102,8 +110,8 @@ fun IGraphicalClientContext.currentFocusedType(supportFocus: Boolean = true, ver
     if (fragment == null || address == null) {
         if (verbose) {
             logger.error(
-                "Set the focus on a UI fragment, and position the caret somewhere in the class (inside method) you would like to work on\n" +
-                        "Note: If you focus it on a class name, it is going to be that class and not the container class."
+                    "Set the focus on a UI fragment, and position the caret somewhere in the class (inside method) you would like to work on\n" +
+                            "Note: If you focus it on a class name, it is going to be that class and not the container class."
             )
         }
         return null
@@ -172,8 +180,8 @@ fun IGraphicalClientContext.currentFocusedType(supportFocus: Boolean = true, ver
             return null
         }
         val options =
-            enginesContext.getDexUnits()
-                .mapNotNull { dexUnit -> dexUnit.types.firstOrNull { it.originalSignature == javaClass.signature } }
+                enginesContext.getDexUnits()
+                        .mapNotNull { dexUnit -> dexUnit.types.firstOrNull { it.originalSignature == javaClass.signature } }
         if (options.isEmpty()) {
             return null
         }

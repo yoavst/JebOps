@@ -21,6 +21,7 @@ class JarLoader(IScript):
             # 1. update ui bridge
             UIBridge = utils.get_object("com.yoavst.jeb.bridge.UIBridge", loader)
             UIBridge.update(ctx)
+            print UIBridge
 
             # 2. Launch plugin
             utils.launch_plugin(instance, ctx, loader)

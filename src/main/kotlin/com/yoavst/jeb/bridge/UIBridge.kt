@@ -26,4 +26,11 @@ object UIBridge {
         currentMethod = context.currentFocusedMethod(supportFocus = false, verbose = false)
         currentClass = context.currentFocusedType(supportFocus = false, verbose = false)
     }
+
+    override fun toString(): String = """
+        FocusedMethod: $focusedMethod
+        CurrentMethod: $currentMethod
+        FocusedClass: $focusedClass
+        CurrentClass: $currentClass
+    """.trimIndent()
 }
