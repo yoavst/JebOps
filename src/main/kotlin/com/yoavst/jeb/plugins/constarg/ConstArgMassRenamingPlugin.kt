@@ -3,6 +3,8 @@ package com.yoavst.jeb.plugins.constarg
 import com.pnfsoftware.jeb.core.*
 import com.pnfsoftware.jeb.core.units.code.android.IDexUnit
 import com.yoavst.jeb.bridge.UIBridge
+import com.yoavst.jeb.plugins.JEB_VERSION
+import com.yoavst.jeb.plugins.PLUGIN_VERSION
 import com.yoavst.jeb.utils.BasicEnginesPlugin
 import com.yoavst.jeb.utils.decompiler
 import com.yoavst.jeb.utils.displayFileOpenSelector
@@ -20,8 +22,8 @@ class ConstArgMassRenamingPlugin :
         "Const arg mass renaming plugin",
         "Fire the plugin to change names using information from a constant string argument to function",
         "Yoav Sternberg",
-        Version.create(0, 1, 0),
-        Version.create(3, 0, 16),
+        PLUGIN_VERSION,
+        JEB_VERSION,
         null
     )
 

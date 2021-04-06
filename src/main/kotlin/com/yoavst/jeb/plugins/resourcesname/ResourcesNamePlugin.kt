@@ -2,7 +2,6 @@ package com.yoavst.jeb.plugins.resourcesname
 
 import com.pnfsoftware.jeb.core.IPluginInformation
 import com.pnfsoftware.jeb.core.PluginInformation
-import com.pnfsoftware.jeb.core.Version
 import com.pnfsoftware.jeb.core.units.code.android.DexUtil.bytearrayULEInt32ToInt
 import com.pnfsoftware.jeb.core.units.code.android.IDexDecompilerUnit
 import com.pnfsoftware.jeb.core.units.code.android.IDexUnit
@@ -10,6 +9,8 @@ import com.pnfsoftware.jeb.core.units.code.android.dex.*
 import com.pnfsoftware.jeb.core.units.code.java.IJavaConstant
 import com.pnfsoftware.jeb.util.collect.MultiMap
 import com.yoavst.jeb.bridge.UIBridge
+import com.yoavst.jeb.plugins.JEB_VERSION
+import com.yoavst.jeb.plugins.PLUGIN_VERSION
 import com.yoavst.jeb.utils.*
 import com.yoavst.jeb.utils.renaming.RenameEngine
 import com.yoavst.jeb.utils.renaming.RenameReason
@@ -38,8 +39,8 @@ class ResourcesNamePlugin : BasicEnginesPlugin(
         "Resources name restore",
         "Fire the plugin to recreate R class and replace constants in code",
         "Yoav Sternberg",
-        Version.create(0, 1, 0),
-        Version.create(3, 0, 16),
+        PLUGIN_VERSION,
+        JEB_VERSION,
         null
     )
 

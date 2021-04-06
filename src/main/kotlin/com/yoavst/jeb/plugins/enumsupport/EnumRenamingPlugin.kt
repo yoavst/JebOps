@@ -2,12 +2,13 @@ package com.yoavst.jeb.plugins.enumsupport
 
 import com.pnfsoftware.jeb.core.IPluginInformation
 import com.pnfsoftware.jeb.core.PluginInformation
-import com.pnfsoftware.jeb.core.Version
 import com.pnfsoftware.jeb.core.units.code.android.IDexDecompilerUnit
 import com.pnfsoftware.jeb.core.units.code.android.IDexUnit
 import com.pnfsoftware.jeb.core.units.code.android.dex.IDexClass
 import com.pnfsoftware.jeb.core.units.code.java.*
 import com.yoavst.jeb.bridge.UIBridge
+import com.yoavst.jeb.plugins.JEB_VERSION
+import com.yoavst.jeb.plugins.PLUGIN_VERSION
 import com.yoavst.jeb.utils.*
 import com.yoavst.jeb.utils.renaming.RenameEngine
 import com.yoavst.jeb.utils.renaming.RenameReason
@@ -28,8 +29,8 @@ class EnumRenamingPlugin : BasicEnginesPlugin(supportsClassFilter = true, defaul
         "Enum fields renaming",
         "Fire the plugin to change obfuscated enum field names to their real name if available",
         "Yoav Sternberg",
-        Version.create(0, 1, 0),
-        Version.create(3, 0, 16),
+        PLUGIN_VERSION,
+        JEB_VERSION,
         null
     )
 

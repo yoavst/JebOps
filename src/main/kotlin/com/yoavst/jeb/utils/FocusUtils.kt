@@ -68,6 +68,7 @@ fun IGraphicalClientContext.currentFocusedMethod(supportFocus: Boolean = true, v
                     logger.error("Note: You cannot select a constructor from Java decompilation view. Switch to bytecode view and select the init function.")
                     return null
                 }
+                else -> {}
             }
         }
     }

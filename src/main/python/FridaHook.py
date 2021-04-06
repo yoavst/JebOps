@@ -37,7 +37,7 @@ class FridaHook(IScript):
 
         assert isinstance(dex_method, IDexMethod)
         clz = dex_method.getClassType().getSignature()[1:-1].replace('/', '.')
-        method = dex_method.getName(True)
+        method = dex_method.getName(False)
         method = BasicMethodMap.get(method, method)
         sig = dex_method.getSignature(False)
         this_part = "" if (dex_method.getGenericFlags() & 8) == 8 else "this"

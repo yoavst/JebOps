@@ -17,6 +17,7 @@ Extract the provided `offline.tar.xz` to the main project's folder. You are good
 
 1. Copy the flat jar to `$JEB_HOME/coreplugins/`
 2. Copy The following scripts from `src/main/python` to `$JEB_HOME/scripts`:
+    * FridaHook.py
     * RenameFromConstArg.py
     * UIBridge.py
     * utils.py (not a script, but a dependency of both scripts)
@@ -35,6 +36,10 @@ Currently, the project has only one dynamic plugin: rename from constant arg. It
 
 1. Use the shortcut "Ctrl+Alt+U" while selecting a method. Then, choose the plugin like you choose a one time plugin.
 2. Use the shortcut "Ctrl+Alt+L" while selecting a method.
+
+### Scripts 
+
+The project comes with some handy scripts you can use.
 
 ### Naming convention
 
@@ -304,7 +309,7 @@ Custom Landroid/os/Bundle;->getBinder(Ljava/lang/String;)Landroid/os/IBinder; 0 
 # ...
 ```
 
-#### Example
+##### Example
 
 Running the mass renaming plugin, using built-in list, on Twitter apk using i7-4770 took 100s, yielding:
 
@@ -333,6 +338,51 @@ private static Float d(Intent arg3) {
     return __A_Level == -1 || __A_Scale == -1 ? null : ((float)(((float)__A_Level) / ((float)__A_Scale)));
 }
 ```
+#### Getters and setters renamers
+
+A common case not covered by the previous method is getters & setters. We provide a plugin that uses same infrastructure as the previous plugins,
+but searches for methods of the form getX() and setY(param). It will rename the asignee and argument as expected.
+
+
+##### Example
+
+Running the GetX plugin, on Twitter apk using i7-4770 took 180s, yielding:
+
+```
+Stats:
+ Fields: 1067 Identifiers: 10261
+```
+
+Before:
+
+```java
+ComponentName v0_1 = MediaButtonReceiver.getServiceComponentByAction(arg4, "android.media.browse.MediaBrowserService");
+if(v0_1 != null) {
+    BroadcastReceiver.PendingResult v1 = this.goAsync();
+    Context v3 = arg4.getApplicationContext();
+    MediaButtonConnectionCallback v2 = new MediaButtonConnectionCallback(v3, arg5, v1);
+    MediaBrowserCompat v4 = new MediaBrowserCompat(v3, v0_1, v2, null);
+    v2.setMediaBrowser(v4);
+    v4.connect();
+    return;
+}
+```
+
+After:
+
+```java
+ComponentName v0_1 = MediaButtonReceiver.getServiceComponentByAction(arg4, "android.media.browse.MediaBrowserService");
+if(v0_1 != null) {
+    BroadcastReceiver.PendingResult v1 = this.goAsync();
+    Context __A_applicationContext = arg4.getApplicationContext();
+    MediaButtonConnectionCallback v2 = new MediaButtonConnectionCallback(__A_applicationContext, arg5, v1);
+    MediaBrowserCompat __A_mediaBrowser = new MediaBrowserCompat(__A_applicationContext, v0_1, v2, null);
+    v2.setMediaBrowser(__A_mediaBrowser);
+    __A_mediaBrowser.connect();
+    return;
+}
+```
+
 
 ## Development
 
@@ -349,6 +399,4 @@ You can use the script `JarLoader.py` to run a plugin directly from a jar.
 For that to work, you need to delete the current version from `coreplugins`, and have your code to have no reference after running.
 
 ## Wishlist
-
-1. Use android api methods for naming. For example, `Intent::getAction` can be used to name a variable action
-2. Create an informative name from short methods body
+1. Create an informative name from short methods body

@@ -16,12 +16,18 @@ private val logger = GlobalLog.getLogger(DecompilerUtils::class.java)
 val IDexUnit.decompiler: IDexDecompilerUnit get() = DecompilerHelper.getDecompiler(this) as IDexDecompilerUnit
 
 fun IDexDecompilerUnit.decompileDexMethod(method: IDexMethod): IJavaMethod? {
-    if (!decompileMethod(method.signature)) {
-        logger.warning("Failed to decompile ${method.currentSignature}")
+    try {
+        if (!decompileMethod(method.signature)) {
+            logger.warning("Failed to decompile ${method.currentSignature}")
+            return null
+        }
+
+        return getMethod(method.signature, false)
+    } catch (e: StackOverflowError) {
+        // Fix bug where JEB crashes with stackoverflow when trying to decompile
+        logger.error("Encountered not decompileable method: ${method.currentSignature}")
         return null
     }
-
-    return getMethod(method.signature, false)
 }
 
 fun IDexDecompilerUnit.decompileDexField(field: IDexField): IJavaField? {

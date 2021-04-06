@@ -12,14 +12,12 @@ import com.yoavst.jeb.utils.*
 import com.yoavst.jeb.utils.renaming.RenameEngine
 import com.yoavst.jeb.utils.renaming.RenameReason
 import com.yoavst.jeb.utils.renaming.RenameRequest
-import java.lang.Exception
-import java.lang.IllegalArgumentException
-import kotlin.math.log
 
 class ConstArgMassRenaming(
-    private val renamers: Map<String, ExtendedRenamer>,
-    private val isOperatingOnlyOnThisClass: Boolean,
-    private var classFilter: Regex
+        private val renamers: Map<String, ExtendedRenamer>,
+        private val isOperatingOnlyOnThisClass: Boolean,
+        private var classFilter: Regex,
+        private var recursive: Boolean = true
 ) {
     private val logger: ILogger = GlobalLog.getLogger(javaClass)
     private var effectedMethods: MutableMap<IJavaMethod, IDexClass> = mutableMapOf()
@@ -51,22 +49,22 @@ class ConstArgMassRenaming(
             return
         }
         ConstArgRenamingTraversal(
-            method,
-            decompiledMethod,
-            method.classType.implementingClass!!,
-            unit,
-            renameEngine
+                method,
+                decompiledMethod,
+                method.classType.implementingClass!!,
+                unit,
+                renameEngine
         ).traverse(decompiledMethod.body)
     }
 
     private inner class ConstArgRenamingTraversal(
-        private val method: IDexMethod,
-        private val javaMethod: IJavaMethod,
-        private val cls: IDexClass,
-        private val unit: IDexUnit,
-        renameEngine: RenameEngine
+            private val method: IDexMethod,
+            private val javaMethod: IJavaMethod,
+            private val cls: IDexClass,
+            private val unit: IDexUnit,
+            renameEngine: RenameEngine
     ) :
-        BasicAstTraversal(renameEngine) {
+            BasicAstTraversal(renameEngine) {
         override fun traverseNonCompound(statement: IStatement) {
             if (statement is IJavaAssignment) {
                 // Don't crash on: "Object x;"
@@ -92,40 +90,51 @@ class ConstArgMassRenaming(
                 // the method we were looking for was a constructor
                 processMatchedMethod(assignee, renamers[element.constructorSignature]!!) { element.arguments[it] }
             }
-            else -> {
+            recursive -> {
                 // Try sub elements
                 element.subElements.forEach { traverseElement(it, assignee) }
+            }
+            else -> {
             }
         }
 
         private inline fun processMatchedMethod(assignee: IJavaLeftExpression?, match: ExtendedRenamer, getArg: (Int) -> IJavaElement) {
-            val nameArg = getArg(match.constArgIndex)
-            if (nameArg is IJavaConstant && nameArg.isString) {
-                val result = match(nameArg.string)
-                if (!result.className.isNullOrEmpty()) {
+            var result: RenameResult? = null
+            if (match.constArgIndex < 0) {
+                // case of method match unrelated to args
+                result = match("")
+            } else {
+                val nameArg = getArg(match.constArgIndex)
+                if (nameArg is IJavaConstant && nameArg.isString) {
+                    result = match(nameArg.string)
+                }
+            }
+
+            result?.let { res ->
+                if (!res.className.isNullOrEmpty()) {
                     renameEngine.renameClass(
-                        RenameRequest(
-                            result.className,
-                            RenameReason.MethodStringArgument
-                        ), cls
+                            RenameRequest(
+                                    res.className,
+                                    RenameReason.MethodStringArgument
+                            ), cls
                     )
                 }
-                if (!result.methodName.isNullOrEmpty()) {
+                if (!res.methodName.isNullOrEmpty()) {
                     renameEngine.renameMethod(
-                        RenameRequest(
-                            result.methodName,
-                            RenameReason.MethodStringArgument
-                        ), method, cls
+                            RenameRequest(
+                                    res.methodName,
+                                    RenameReason.MethodStringArgument
+                            ), method, cls
                     )
                 }
-                if (!result.argumentName.isNullOrEmpty()) {
+                if (!res.argumentName.isNullOrEmpty()) {
                     if (match.renamedArgumentIndex == null) {
                         throw IllegalArgumentException("Forget to put renamed argument index")
                     }
-                    renameElement(getArg(match.renamedArgumentIndex), result.argumentName)
+                    renameElement(getArg(match.renamedArgumentIndex), res.argumentName)
                 }
-                if (!result.assigneeName.isNullOrEmpty() && assignee != null) {
-                    renameElement(assignee, result.assigneeName)
+                if (!res.assigneeName.isNullOrEmpty() && assignee != null) {
+                    renameElement(assignee, res.assigneeName)
                 }
             }
         }
@@ -174,7 +183,7 @@ class ConstArgMassRenaming(
     this.a = anIdentifierIRecovered
      */
     private inner class SimpleIdentifierPropagationTraversal(private val cls: IDexClass, renameEngine: RenameEngine) :
-        BasicAstTraversal(renameEngine) {
+            BasicAstTraversal(renameEngine) {
         override fun traverseNonCompound(statement: IStatement) {
             if (statement is IJavaAssignment) {
                 val left = statement.left
@@ -188,10 +197,10 @@ class ConstArgMassRenaming(
                             return
                         }
                         renameEngine.renameField(
-                            RenameRequest(
-                                renameRequest.newName,
-                                RenameReason.MethodStringArgument
-                            ), field, cls
+                                RenameRequest(
+                                        renameRequest.newName,
+                                        RenameReason.MethodStringArgument
+                                ), field, cls
                         )
                     } else if (left is IJavaStaticField) {
                         val field = left.field ?: run {
@@ -199,10 +208,10 @@ class ConstArgMassRenaming(
                             return
                         }
                         renameEngine.renameField(
-                            RenameRequest(
-                                renameRequest.newName,
-                                RenameReason.MethodStringArgument
-                            ), field, cls
+                                RenameRequest(
+                                        renameRequest.newName,
+                                        RenameReason.MethodStringArgument
+                                ), field, cls
                         )
                     }
                 }
