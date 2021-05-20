@@ -1,9 +1,9 @@
 plugins {
-    id 'org.jetbrains.kotlin.jvm' version '1.4.31'
+    id 'org.jetbrains.kotlin.jvm' version '1.5.0'
 }
 
 group 'org.yoavst.jeb'
-version '0.2.0'
+version '0.3.0'
 
 repositories {
     maven { url './offline' }
@@ -15,6 +15,8 @@ compileKotlin {
         jvmTarget = "1.8"
     }
 }
+sourceCompatibility = JavaVersion.VERSION_1_8
+targetCompatibility = JavaVersion.VERSION_1_8
 
 jar {
     manifest {
@@ -24,6 +26,7 @@ jar {
                                          "com.yoavst.jeb.plugins.constarg.GetXPlugin",
                                          "com.yoavst.jeb.plugins.enumsupport.EnumRenamingPlugin",
                                          "com.yoavst.jeb.plugins.resourcesname.ResourcesNamePlugin",
+                                         "com.yoavst.jeb.plugins.kotlin.KotlinPlugin",
                                          "com.yoavst.jeb.plugins.tostring.ToStringRenamingPlugin"].join(" "),
                 "jebPlugin-version": project.version
         )
@@ -39,5 +42,6 @@ dependencies {
 
     compile platform('org.jetbrains.kotlin:kotlin-bom')
     compile 'org.jetbrains.kotlin:kotlin-stdlib-jdk8'
-
+    compile 'org.jetbrains.kotlinx:kotlinx-metadata-jvm:0.3.0'
+    compile 'org.apache.commons:commons-text:1.9'
 }

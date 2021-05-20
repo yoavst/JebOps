@@ -12,6 +12,7 @@ enum class RenameReason(val prefix: String) : Comparable<RenameReason> {
     MethodStringArgument("A"),
     ToString("TS"),
     EnumName("E"),
+    KotlinName("KT"),
     /** The user renamed the class. Should not be used as a reason */
     User("");
 
