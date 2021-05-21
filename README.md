@@ -37,14 +37,14 @@ Currently, the project has only one dynamic plugin: rename from constant arg. It
 1. Use the shortcut "Ctrl+Alt+U" while selecting a method. Then, choose the plugin like you choose a one time plugin.
 2. Use the shortcut "Ctrl+Alt+L" while selecting a method.
 
-### Scripts 
+### Scripts
 
 The project comes with some handy scripts you can use.
 
 ### Naming convention
 
-The naming convention of the plugin is `original__Reason_NewName`. 
-For example, it may convert `axu` to `axu__A_SettingsUtils`.
+The naming convention of the plugin is `original__Reason_NewName`. For example, it may convert `axu`
+to `axu__A_SettingsUtils`.
 
 ## Plugins
 
@@ -129,10 +129,21 @@ Before:
 // PARTIAL FAILURE: ENUM SUGARING
 // The enumeration is rendered as-is instead of being sugared into a Java 5 enum.
 static final class b extends Enum {
-    public static final enum b U;
-    public static final enum b V;
-    public static final enum b W;
-    public static final enum b X;
+    public static final enum b U
+
+    ;
+
+    public static final enum b V
+
+    ;
+
+    public static final enum b W
+
+    ;
+
+    public static final enum b X
+
+    ;
     private static final b[] Y;
 
     static {
@@ -153,10 +164,21 @@ After:
 
 ```java
 static final class b__T_Enum extends Enum {
-    public static final enum b__T_Enum U__E_NONE;
-    public static final enum b__T_Enum V__E_START;
-    public static final enum b__T_Enum W__E_END;
-    public static final enum b__T_Enum X__E_CENTER;
+    public static final enum b__T_Enum U__E_NONE
+
+    ;
+
+    public static final enum b__T_Enum V__E_START
+
+    ;
+
+    public static final enum b__T_Enum W__E_END
+
+    ;
+
+    public static final enum b__T_Enum X__E_CENTER
+
+    ;
     private static final b__T_Enum[] Y;
 }
 ```
@@ -298,7 +320,7 @@ Where:
     * `renamer_bundle_get.py` - supports the case of `var = get("LONG.DOT.SEPARATED.NAME.NOTIFICATION_TITLE")`
     * `renamer_bundle_set.py` - supports the case of `set("LONG.DOT.SEPARATED.NAME.NOTIFICATION_TITLE", var)`
     * `renamer_log_renamer.py` - supports the case of `log("CLASSNAME MAYBE_METHODNAME", ...)`
-    
+
 The project comes with a builtin list, supporting: Intent, Bundle, ContentValues, org.json and shared preferences. It
 doesn't support external libraries because they would probably be obfuscated.
 
@@ -322,27 +344,28 @@ Stats:
 Before:
 
 ```java
-private static Float d(Intent arg3) {
-    int v0 = arg3.getIntExtra("level", -1);
-    int v3 = arg3.getIntExtra("scale", -1);
-    return v0 == -1 || v3 == -1 ? null : ((float)(((float)v0) / ((float)v3)));
-}
+private static Float d(Intent arg3){
+        int v0=arg3.getIntExtra("level",-1);
+        int v3=arg3.getIntExtra("scale",-1);
+        return v0==-1||v3==-1?null:((float)(((float)v0)/((float)v3)));
+        }
 ```
 
 After:
 
 ```java
-private static Float d(Intent arg3) {
-    int __A_Level = arg3.getIntExtra("level", -1);
-    int __A_Scale = arg3.getIntExtra("scale", -1);
-    return __A_Level == -1 || __A_Scale == -1 ? null : ((float)(((float)__A_Level) / ((float)__A_Scale)));
-}
+private static Float d(Intent arg3){
+        int __A_Level=arg3.getIntExtra("level",-1);
+        int __A_Scale=arg3.getIntExtra("scale",-1);
+        return __A_Level==-1||__A_Scale==-1?null:((float)(((float)__A_Level)/((float)__A_Scale)));
+        }
 ```
+
 #### Getters and setters renamers
 
-A common case not covered by the previous method is getters & setters. We provide a plugin that uses same infrastructure as the previous plugins,
-but searches for methods of the form getX() and setY(param). It will rename the asignee and argument as expected.
-
+A common case not covered by the previous method is getters & setters. We provide a plugin that uses same infrastructure
+as the previous plugins, but searches for methods of the form getX() and setY(param). It will rename the asignee and
+argument as expected.
 
 ##### Example
 
@@ -356,33 +379,115 @@ Stats:
 Before:
 
 ```java
-ComponentName v0_1 = MediaButtonReceiver.getServiceComponentByAction(arg4, "android.media.browse.MediaBrowserService");
-if(v0_1 != null) {
-    BroadcastReceiver.PendingResult v1 = this.goAsync();
-    Context v3 = arg4.getApplicationContext();
-    MediaButtonConnectionCallback v2 = new MediaButtonConnectionCallback(v3, arg5, v1);
-    MediaBrowserCompat v4 = new MediaBrowserCompat(v3, v0_1, v2, null);
-    v2.setMediaBrowser(v4);
-    v4.connect();
-    return;
+ComponentName v0_1=MediaButtonReceiver.getServiceComponentByAction(arg4,"android.media.browse.MediaBrowserService");
+        if(v0_1!=null){
+        BroadcastReceiver.PendingResult v1=this.goAsync();
+        Context v3=arg4.getApplicationContext();
+        MediaButtonConnectionCallback v2=new MediaButtonConnectionCallback(v3,arg5,v1);
+        MediaBrowserCompat v4=new MediaBrowserCompat(v3,v0_1,v2,null);
+        v2.setMediaBrowser(v4);
+        v4.connect();
+        return;
+        }
+```
+
+After:
+
+```java
+ComponentName v0_1=MediaButtonReceiver.getServiceComponentByAction(arg4,"android.media.browse.MediaBrowserService");
+        if(v0_1!=null){
+        BroadcastReceiver.PendingResult v1=this.goAsync();
+        Context __A_applicationContext=arg4.getApplicationContext();
+        MediaButtonConnectionCallback v2=new MediaButtonConnectionCallback(__A_applicationContext,arg5,v1);
+        MediaBrowserCompat __A_mediaBrowser=new MediaBrowserCompat(__A_applicationContext,v0_1,v2,null);
+        v2.setMediaBrowser(__A_mediaBrowser);
+        __A_mediaBrowser.connect();
+        return;
+        }
+```
+
+### Source file name
+
+Sometimes the dex contains as a metadata, the source file name for some classes. JEB by default does not show it for
+smali view, and never shows it for decompiler view. The plugin adds comment for every class that has this debug
+attribute, with the source name. If enabled, it would also add the source file name as part of the class name.
+
+**Warning:** Some obfuscator sets the source file to a specific string to ALL classes - Use with caution. You are
+advised to enable debug directives, and search for ".source", to see if this is indeed the case.
+
+We could not run it on Twitter, since the source file name is always `"TWTR"`
+
+### Example
+
+Before:
+
+```java
+class A {...
+}
+
+class B {...
 }
 ```
 
 After:
 
 ```java
-ComponentName v0_1 = MediaButtonReceiver.getServiceComponentByAction(arg4, "android.media.browse.MediaBrowserService");
-if(v0_1 != null) {
-    BroadcastReceiver.PendingResult v1 = this.goAsync();
-    Context __A_applicationContext = arg4.getApplicationContext();
-    MediaButtonConnectionCallback v2 = new MediaButtonConnectionCallback(__A_applicationContext, arg5, v1);
-    MediaBrowserCompat __A_mediaBrowser = new MediaBrowserCompat(__A_applicationContext, v0_1, v2, null);
-    v2.setMediaBrowser(__A_mediaBrowser);
-    __A_mediaBrowser.connect();
-    return;
+/* if comment only is enabled */
+// Source name: RandomUtils.java
+class A {...
+}
+
+/* if class name renaming is enabled */
+class B__SF_UserInfo { ...
 }
 ```
 
+### Kotlin metadata
+
+If the apk does not obfuscate the kotlin metadata information, We could get a lot of information about the class for
+free. The plugin also supports obfuscated name for the metadata annotation.
+
+#### Example
+
+Before:
+
+```java
+
+@Metadata(bv = {1, 0, 3}, d1 = {"\u0000\u0018\n\u0002\u0018\u0002\n\u0002\u0018\u0002\n\u0002\b\u0002\n\u0002\u0010\u0002\n\u0000\n\u0002\u0018\u0002\n\u0000\u0018\u00002\u00020\u0001B\u0005¢\u0006\u0002\u0010\u0002J\u0012\u0010\u0003\u001A\u00020\u00042\b\u0010\u0005\u001A\u0004\u0018\u00010\u0006H\u0014\u00A8\u0006\u0007"}, d2 = {"Lcom/yoavst/testing/project/MainActivity;", "Landroidx/appcompat/app/AppCompatActivity;", "()V", "onCreate", "", "savedInstanceState", "Landroid/os/Bundle;", "app_debug"}, k = 1, mv = {1, 1, 15})
+public final class A extends AppCompatActivity {
+
+}
+```
+
+After:
+
+```java
+/*
+Kotlin metadata:
+Type: Class
+Class Info:
+    Name: com/yoavst/testing/project/MainActivity
+    Supertypes: Class(name=androidx/appcompat/app/AppCompatActivity)
+    Module Name: app_debug
+    Type Aliases: 
+    Companion Object: 
+    Nested Classes:  
+    Enum Entries: 
+
+Constructors:
+    <init>()V, Arguments: 
+
+Functions:
+    onCreate(Landroid/os/Bundle;)V, Arguments: savedInstanceState
+
+Properties:
+    
+*/
+@Metadata(bv = {1, 0, 3}, d1 = {"\u0000\u0018\n\u0002\u0018\u0002\n\u0002\u0018\u0002\n\u0002\b\u0002\n\u0002\u0010\u0002\n\u0000\n\u0002\u0018\u0002\n\u0000\u0018\u00002\u00020\u0001B\u0005¢\u0006\u0002\u0010\u0002J\u0012\u0010\u0003\u001A\u00020\u00042\b\u0010\u0005\u001A\u0004\u0018\u00010\u0006H\u0014\u00A8\u0006\u0007"}, d2 = {"Lcom/yoavst/testing/project/MainActivity;", "Landroidx/appcompat/app/AppCompatActivity;", "()V", "onCreate", "", "savedInstanceState", "Landroid/os/Bundle;", "app_debug"}, k = 1, mv = {1, 1, 15})
+public final class A__KT_MainActivity extends AppCompatActivity {
+
+}
+```
 
 ## Development
 
@@ -392,11 +497,12 @@ The plugin relays on JEB internal api for some purposes. It was tested on JEB 3.
 
 1. `UIUtils` depends on `OptionsForEnginesPluginDialog` for showing options dialog from script. As such, it also depends
    on SWT.
-   
+
 ### Utils
 
-You can use the script `JarLoader.py` to run a plugin directly from a jar. 
-For that to work, you need to delete the current version from `coreplugins`, and have your code to have no reference after running.
+You can use the script `JarLoader.py` to run a plugin directly from a jar. For that to work, you need to delete the
+current version from `coreplugins`, and have your code to have no reference after running.
 
 ## Wishlist
+
 1. Create an informative name from short methods body

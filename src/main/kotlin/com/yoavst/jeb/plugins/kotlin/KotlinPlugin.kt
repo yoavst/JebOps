@@ -155,18 +155,16 @@ class KotlinPlugin : BasicEnginesPlugin(supportsClassFilter = true, defaultForSc
             seq.filter(classFilter::matches)
         }
 
-        val tmp = unit.classBySignature("Lcom/yoavst/testing/project/MainActivity;")!!
-        val kotlinAnnotation = tmp.annotationsDirectory.classAnnotations[0].annotation
-        processClass(unit, tmp, kotlinAnnotation, renameEngine)
-
-
+        var i = 0
         seq.filter { it.annotationsDirectory?.classAnnotations?.isNotEmpty() ?: false }.mapToPairNotNull { cls ->
             cls.annotationsDirectory.classAnnotations.firstOrNull {
                 it.annotation.typeIndex == annotationTypeIndex
             }?.annotation
         }.forEach { (cls, annotation) ->
+            i++
             processClass(unit, cls, annotation, renameEngine)
         }
+        logger.info("There are $i classes with kotlin metadata annotation!")
     }
 
     private fun processClass(unit: IDexUnit, cls: IDexClass, annotation: IDexAnnotation, renameEngine: RenameEngine) {
@@ -181,6 +179,16 @@ class KotlinPlugin : BasicEnginesPlugin(supportsClassFilter = true, defaultForSc
 
 
         val header = KotlinClassHeader(k, mv, d1, d2, xs, pn, xi)
+        val originalComment = unit.getComment(cls.currentSignature) ?: ""
+        if (KOTLIN_METADATA_COMMENT_PREFIX !in originalComment) {
+            val comment = header.toStringBlock()
+            if (originalComment.isBlank()) {
+                unit.setComment(cls.currentSignature,  comment)
+             } else {
+                unit.setComment(cls.currentSignature, originalComment + "\n\n" + comment)
+            }
+        }
+
         when (val metadata = KotlinClassMetadata.read(header)) {
             is KotlinClassMetadata.Class -> {
                 val classInfo = metadata.toKmClass()

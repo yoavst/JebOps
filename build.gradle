@@ -27,6 +27,7 @@ jar {
                                          "com.yoavst.jeb.plugins.enumsupport.EnumRenamingPlugin",
                                          "com.yoavst.jeb.plugins.resourcesname.ResourcesNamePlugin",
                                          "com.yoavst.jeb.plugins.kotlin.KotlinPlugin",
+                                         "com.yoavst.jeb.plugins.sourcefile.SourceFilePlugin",
                                          "com.yoavst.jeb.plugins.tostring.ToStringRenamingPlugin"].join(" "),
                 "jebPlugin-version": project.version
         )
