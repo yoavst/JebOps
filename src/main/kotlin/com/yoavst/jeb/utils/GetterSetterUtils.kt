@@ -28,7 +28,7 @@ fun propagateRenameToGetterAndSetters(
         logger.trace("Processing for getters/setters: ${cls.currentName}")
         for (method in cls.methods) {
             // Getter / setter should have a verify minimal bytecode, with less than 10 instructions.
-            if (method.data.codeItem.instructions.size > 10)
+            if ((method?.data?.codeItem?.instructions?.size ?: Int.MAX_VALUE) > 10)
                 continue
             val decompiledMethod = decompiler.decompileDexMethod(method) ?: continue
             processPossibleGetterSetter(method, decompiledMethod, cls, renameEngine, useOnlyModified)
