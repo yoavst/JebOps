@@ -7,4 +7,4 @@ import com.pnfsoftware.jeb.core.units.code.java.IJavaCall
 fun IJavaCall.getRealArgument(pos: Int) = if (isStaticCall) getArgument(pos) else getArgument(pos + 1)
 
 val IDexMethod.isStatic: Boolean
-    get() = (data.accessFlags and IDexUnit.ACC_STATIC) != 0
+    get() = data?.let { (data.accessFlags and IDexUnit.ACC_STATIC) != 0 } ?: false
