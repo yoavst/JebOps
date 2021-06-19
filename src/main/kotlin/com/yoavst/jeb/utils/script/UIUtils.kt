@@ -19,7 +19,7 @@ object UIUtils {
             val dialogCls = Class.forName(OptionsDialogClass)
             val dialog = dialogCls.constructors[0].newInstance(shell, plugin)
             @Suppress("UNCHECKED_CAST")
-            return dialogCls.getMethod("open").invoke(dialog) as? Map<String, String>
+            return (dialogCls.getMethod("open").invoke(dialog) as? Map<String, String>) ?: emptyMap()
         } catch (e: ClassNotFoundException) {
             logger.catching(e, "Dialog class is not available in current version of JEB")
         } catch (e: ReflectiveOperationException) {

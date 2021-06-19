@@ -489,6 +489,42 @@ public final class A__KT_MainActivity extends AppCompatActivity {
 }
 ```
 
+### Kotlin intrinsics
+
+Kotlin omits nullability checks in code, with the argument real as parameters. The plugin tries to match the class,
+restoring its methods. Then, the plugin uses the mass renaming plugin to rename what usage it can.
+
+#### Example
+
+Running the Kotlin intrinsics plugin, on Twitter apk using i7-4770 took 50s, yielding:
+
+```
+Stats:
+ Classes: 1 Methods: 1486
+ Fields: 4224 Identifiers: 16260
+
+```
+
+Before:
+
+```java
+    public static final o5d a(View p0,zpd p1){
+        vrd.g(p0,"$this$longClicks");
+        vrd.g(p1,"handled");
+        return new nz0(p0,p1);
+        }
+```
+
+After:
+
+```java
+    public static final o5d a(View __A_$this$longClicks,zpd __A_handled){
+        vrd__KT_Intrinsics.g__KT_checkParameterIsNotNull(__A_$this$longClicks,"$this$longClicks");
+        vrd__KT_Intrinsics.g__KT_checkParameterIsNotNull(__A_handled,"handled");
+        return new nz0(__A_$this$longClicks,__A_handled);
+        }
+```
+
 ## Development
 
 ### Internal api

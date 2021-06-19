@@ -3,7 +3,7 @@ plugins {
 }
 
 group 'org.yoavst.jeb'
-version '0.3.0'
+version '0.4.0'
 
 repositories {
     maven { url './offline' }
@@ -26,7 +26,8 @@ jar {
                                          "com.yoavst.jeb.plugins.constarg.GetXPlugin",
                                          "com.yoavst.jeb.plugins.enumsupport.EnumRenamingPlugin",
                                          "com.yoavst.jeb.plugins.resourcesname.ResourcesNamePlugin",
-                                         "com.yoavst.jeb.plugins.kotlin.KotlinPlugin",
+                                         "com.yoavst.jeb.plugins.kotlin.KotlinAnnotationPlugin",
+                                         "com.yoavst.jeb.plugins.kotlin.KotlinIntrinsicsPlugin",
                                          "com.yoavst.jeb.plugins.sourcefile.SourceFilePlugin",
                                          "com.yoavst.jeb.plugins.tostring.ToStringRenamingPlugin"].join(" "),
                 "jebPlugin-version": project.version

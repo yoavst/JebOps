@@ -18,7 +18,7 @@ import com.yoavst.jeb.utils.renaming.RenameRequest
 import kotlinx.metadata.jvm.KotlinClassHeader
 import kotlinx.metadata.jvm.KotlinClassMetadata
 
-class KotlinPlugin : BasicEnginesPlugin(supportsClassFilter = true, defaultForScopeOnThisClass = false) {
+class KotlinAnnotationPlugin : BasicEnginesPlugin(supportsClassFilter = true, defaultForScopeOnThisClass = false) {
     private lateinit var annotationSignature: String
     private lateinit var metadataKName: String
     private lateinit var metadataBVName: String
