@@ -27,7 +27,7 @@ fun propagateRenameToGetterAndSetters(
     for (cls in classes) {
         logger.trace("Processing for getters/setters: ${cls.currentName}")
         for (method in cls.methods) {
-            // Getter / setter should have a verify minimal bytecode, with less than 10 instructions.
+            // Getter / setter should have a very minimal bytecode, with less than 10 instructions.
             if ((method?.data?.codeItem?.instructions?.size ?: Int.MAX_VALUE) > 10)
                 continue
             val decompiledMethod = decompiler.decompileDexMethod(method) ?: continue
@@ -62,8 +62,7 @@ private fun processPossibleGetterSetter(
                 val currentName = right.field.currentName(cls)
                 val (actualCurrentName, renameReason) = when {
                     currentName != null && useOnlyModified -> renameEngine.getModifiedInfo(currentName) ?: return
-                    currentName != null && !useOnlyModified -> renameEngine.getModifiedInfo(currentName)
-                        ?: name to RenameReason.FieldName
+                    currentName != null && !useOnlyModified -> renameEngine.getModifiedInfo(currentName) ?: (name to RenameReason.FieldName)
                     currentName == null && useOnlyModified -> return
                     else -> name to RenameReason.FieldName
                 }
@@ -87,8 +86,7 @@ private fun processPossibleGetterSetter(
                 val currentName = left.field.currentName(cls)
                 val (actualCurrentName, renameReason) = when {
                     currentName != null && useOnlyModified -> renameEngine.getModifiedInfo(currentName) ?: return
-                    currentName != null && !useOnlyModified -> renameEngine.getModifiedInfo(currentName)
-                        ?: name to RenameReason.FieldName
+                    currentName != null && !useOnlyModified -> renameEngine.getModifiedInfo(currentName) ?: (name to RenameReason.FieldName)
                     currentName == null && useOnlyModified -> return
                     else -> name to RenameReason.FieldName
                 }
