@@ -1,20 +1,27 @@
-plugins {
-    id 'org.jetbrains.kotlin.jvm' version '1.5.0'
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        if (project.getGradle().startParameter.isOffline())
+            classpath fileTree(include: ['*.jar'], dir: project.findProperty("OFFLINE_BUILD_PATH"))
+        else
+            classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:1.5.31"
+    }
 }
+
+apply plugin: 'kotlin'
+
 
 group 'org.yoavst.jeb'
 version '0.4.0'
-
-repositories {
-    maven { url './offline' }
-    jcenter()
-}
 
 compileKotlin {
     kotlinOptions {
         jvmTarget = "1.8"
     }
 }
+
 sourceCompatibility = JavaVersion.VERSION_1_8
 targetCompatibility = JavaVersion.VERSION_1_8
 
@@ -38,12 +45,69 @@ jar {
     }
 }
 
-dependencies {
-    compileOnly fileTree(dir: 'libs/runtime', include: ['*.jar'])
-    compileOnly 'org.python:jython:2.7.0'
-
-    compile platform('org.jetbrains.kotlin:kotlin-bom')
-    compile 'org.jetbrains.kotlin:kotlin-stdlib-jdk8'
-    compile 'org.jetbrains.kotlinx:kotlinx-metadata-jvm:0.3.0'
-    compile 'org.apache.commons:commons-text:1.9'
+repositories {
+    mavenCentral()
 }
+
+dependencies {
+    if (project.getGradle().startParameter.isOffline()) {
+        compile fileTree(dir: project.findProperty('OFFLINE_COMPILE_PATH'), include: ['*.jar'])
+        compileOnly fileTree(dir: project.findProperty('OFFLINE_COMPILE_ONLY_PATH'), include: ['*.jar'])
+    } else {
+        compileOnly fileTree(dir: 'libs/runtime', include: ['*.jar'])
+        compileOnly 'org.python:jython:2.7.0'
+
+        compile platform('org.jetbrains.kotlin:kotlin-bom')
+        compile 'org.jetbrains.kotlin:kotlin-stdlib-jdk8'
+        compile 'org.jetbrains.kotlinx:kotlinx-metadata-jvm:0.3.0'
+        compile 'org.apache.commons:commons-text:1.9'
+    }
+}
+
+//region Offline
+task resolveDependencies {
+    configurations.compile.resolve()
+    configurations.compileOnly.resolve()
+}
+task copyCompileOnly(type: Copy) {
+    configurations.compileOnly
+            .filter { it.absolutePath.endsWith("jar") }
+            .forEach {
+                from it.absolutePath
+                into project.findProperty('OFFLINE_COMPILE_ONLY_PATH')
+            }
+}
+
+task copyCompile(type: Copy) {
+    configurations.compile
+            .filter { it.absolutePath.endsWith("jar") }
+            .forEach {
+                from it.absolutePath
+                into project.findProperty('OFFLINE_COMPILE_PATH')
+            }
+}
+
+task copyPluginDependencies {
+    doLast {
+        def dependencies = []
+        buildscript.configurations.classpath.each { dependency ->
+            dependencies.add(dependency)
+        }
+        dependencies.unique().each { dependency ->
+            copy {
+                from dependency.absolutePath
+                into project.findProperty("OFFLINE_BUILD_PATH")
+            }
+        }
+    }
+}
+
+
+task copyDependencies(type: Copy) {
+    def tasks = [resolveDependencies, copyCompile, copyCompileOnly, copyPluginDependencies]
+    for (int i = 0; i < tasks.size() - 1; i++) {
+        tasks[i + 1].mustRunAfter(tasks[i])
+    }
+    dependsOn(tasks)
+}
+//endregion

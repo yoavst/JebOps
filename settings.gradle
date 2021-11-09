@@ -1,8 +1,1 @@
-pluginManagement {
-    repositories {
-        maven { url './offline' }
-        gradlePluginPortal()
-    }
-}
-
 rootProject.name = 'JebOps'
