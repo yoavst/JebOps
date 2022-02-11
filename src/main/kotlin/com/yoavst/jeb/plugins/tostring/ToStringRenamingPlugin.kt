@@ -47,7 +47,7 @@ class ToStringRenamingPlugin : BasicEnginesPlugin(supportsClassFilter = true, de
 
     /** Process a toString() method from the given class **/
     private fun processToStringMethod(method: IJavaMethod, cls: IDexClass, renameEngine: RenameEngine) {
-        // currently supports only one style of toString
+        // currently, supports only one style of toString
         if (method.body.size() == 0 || method.body[0] !is IJavaReturn)
             return
 
@@ -128,7 +128,7 @@ class ToStringRenamingPlugin : BasicEnginesPlugin(supportsClassFilter = true, de
 
                 }
                 else -> {
-                    logger.debug("Warning: The toString method for ${cls.name} has a complex expression ${left.javaClass.canonicalName}")
+                    logger.debug("Warning: The toString method for ${cls.name} has a complex expression ${left?.javaClass?.canonicalName}")
                     return
                 }
             }

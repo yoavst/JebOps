@@ -7,6 +7,7 @@ Set of JEB plugins and scripts for better Android reversing experience.
 ### Offline environment
 
 Extract the provided `offline.tar.xz` to the main project's folder. You are good to go.
+Run with --offline
 
 ### Compilation
 
