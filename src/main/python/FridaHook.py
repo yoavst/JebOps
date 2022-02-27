@@ -1,6 +1,6 @@
-# ?description=update the UIBridge class of JebPlugin
-# ?shortcut=Mod1+Mod3+F
-# ?author=LeadroyaL With modification by Yoav Sternberg
+#?description=update the UIBridge class of JebPlugin
+#?shortcut=Mod1+Mod3+F
+#?author=LeadroyaL With modification by Yoav Sternberg
 
 from com.pnfsoftware.jeb.client.api import IScript, IGraphicalClientContext
 from com.pnfsoftware.jeb.core import IEnginesPlugin
