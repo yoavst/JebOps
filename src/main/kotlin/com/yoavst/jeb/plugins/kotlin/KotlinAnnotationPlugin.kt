@@ -179,13 +179,13 @@ class KotlinAnnotationPlugin : BasicEnginesPlugin(supportsClassFilter = true, de
 
 
         val header = KotlinClassHeader(k, mv, d1, d2, xs, pn, xi)
-        val originalComment = unit.getComment(cls.currentSignature) ?: ""
+        val originalComment = unit.getCommentBackport(cls.currentSignature) ?: ""
         if (KOTLIN_METADATA_COMMENT_PREFIX !in originalComment) {
             val comment = header.toStringBlock()
             if (originalComment.isBlank()) {
-                unit.setComment(cls.currentSignature,  comment)
+                unit.setCommentBackport(cls.currentSignature,  comment)
              } else {
-                unit.setComment(cls.currentSignature, originalComment + "\n\n" + comment)
+                unit.setCommentBackport(cls.currentSignature, originalComment + "\n\n" + comment)
             }
         }
 

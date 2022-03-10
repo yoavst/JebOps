@@ -19,3 +19,20 @@ fun IDexUnit.xrefsFor(item: IDexItem): List<String> {
 fun IDexUnit.xrefsForString(string: IDexString): List<String> {
     return referenceManager.getReferences(DexPoolType.STRING, string.index).map { it.internalAddress }
 }
+
+private val getComment = try {
+    IDexUnit::class.java.getMethod("getComment", String::class.java)
+} catch (e: NoSuchMethodException) {
+    IDexUnit::class.java.getMethod("getInlineComment", String::class.java)
+}
+
+private val setComment = try {
+    IDexUnit::class.java.getMethod("setComment", String::class.java, String::class.java)
+} catch (e: NoSuchMethodException) {
+    IDexUnit::class.java.getMethod("setInlineComment", String::class.java, String::class.java)
+}
+
+fun IDexUnit.getCommentBackport(address: String): String? = getComment(this, address) as? String
+fun IDexUnit.setCommentBackport(address: String, value: String) {
+    setComment(this, address, value)
+}

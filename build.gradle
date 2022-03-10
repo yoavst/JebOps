@@ -14,7 +14,7 @@ apply plugin: 'kotlin'
 
 
 group 'org.yoavst.jeb'
-version '0.4.1'
+version '0.4.2'
 
 compileKotlin {
     kotlinOptions {

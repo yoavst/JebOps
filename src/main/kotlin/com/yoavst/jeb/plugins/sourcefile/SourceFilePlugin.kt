@@ -9,9 +9,7 @@ import com.pnfsoftware.jeb.core.units.code.android.dex.IDexClass
 import com.yoavst.jeb.bridge.UIBridge
 import com.yoavst.jeb.plugins.JEB_VERSION
 import com.yoavst.jeb.plugins.PLUGIN_VERSION
-import com.yoavst.jeb.utils.BasicEnginesPlugin
-import com.yoavst.jeb.utils.currentSignature
-import com.yoavst.jeb.utils.matches
+import com.yoavst.jeb.utils.*
 import com.yoavst.jeb.utils.renaming.RenameEngine
 import com.yoavst.jeb.utils.renaming.RenameReason
 import com.yoavst.jeb.utils.renaming.RenameRequest
@@ -73,13 +71,13 @@ class SourceFilePlugin : BasicEnginesPlugin(supportsClassFilter = true, defaultF
 
         if (shouldAddComment) {
             if (sourceWithExtension !in cls.currentSignature && !cls.isMemberClass) {
-                val originalComment = unit.getComment(cls.currentSignature) ?: ""
+                val originalComment = unit.getCommentBackport(cls.currentSignature) ?: ""
                 if (COMMENT_PREFIX !in originalComment) {
                     val comment = "$COMMENT_PREFIX$sourceName"
                     if (originalComment.isBlank()) {
-                        unit.setComment(cls.currentSignature, comment)
+                        unit.setCommentBackport(cls.currentSignature, comment)
                     } else {
-                        unit.setComment(cls.currentSignature, originalComment + "\n\n" + comment)
+                        unit.setCommentBackport(cls.currentSignature, originalComment + "\n\n" + comment)
                     }
                 }
             }
