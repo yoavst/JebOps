@@ -35,7 +35,7 @@ class EnumRenamingPlugin : BasicEnginesPlugin(supportsClassFilter = true, defaul
     )
 
     override fun processUnit(unit: IDexUnit, renameEngine: RenameEngine) {
-        val decompiler = unit.decompiler
+        val decompiler = unit.decompilerRef
         if (isOperatingOnlyOnThisClass) {
             val cls = UIBridge.focusedClass?.implementingClass ?: return
             processClass(cls, decompiler, renameEngine)

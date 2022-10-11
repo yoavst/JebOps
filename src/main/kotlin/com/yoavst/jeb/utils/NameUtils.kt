@@ -17,4 +17,4 @@ fun IJavaField.currentName(cls: IDexClass): String? = cls.getField(false, origin
 fun IJavaField.currentName(unit: IDexUnit): String? = unit.getField(signature)?.currentName
 
 val IJavaIdentifier.originalName: String get() = name
-fun IJavaIdentifier.currentName(unit: IDexUnit) = unit.decompiler.getIdentifierName(this) ?: originalName
+fun IJavaIdentifier.currentName(unit: IDexUnit) = unit.decompilerRef.getIdentifierName(this) ?: originalName

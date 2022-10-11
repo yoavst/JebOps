@@ -1,13 +1,15 @@
 package com.yoavst.jeb.plugins.constarg
 
 import com.pnfsoftware.jeb.core.*
+import com.pnfsoftware.jeb.core.units.NotificationType
+import com.pnfsoftware.jeb.core.units.UnitNotification
 import com.pnfsoftware.jeb.core.units.code.android.IDexUnit
 import com.pnfsoftware.jeb.core.units.code.android.dex.IDexMethod
 import com.yoavst.jeb.bridge.UIBridge
 import com.yoavst.jeb.plugins.JEB_VERSION
 import com.yoavst.jeb.plugins.PLUGIN_VERSION
 import com.yoavst.jeb.utils.BasicEnginesPlugin
-import com.yoavst.jeb.utils.decompiler
+import com.yoavst.jeb.utils.decompilerRef
 import com.yoavst.jeb.utils.displayFileOpenSelector
 import com.yoavst.jeb.utils.originalSignature
 import com.yoavst.jeb.utils.renaming.RenameEngine
@@ -125,7 +127,7 @@ class ConstArgRenamingPlugin :
         if (isOperatingOnlyOnThisMethod) {
             if (UIBridge.currentMethod != null && UIBridge.currentClass != null) {
                 // you cannot see the sources of a type without implementing class
-                massRenamer.processMethod(UIBridge.currentMethod!!, unit, unit.decompiler, renameEngine)
+                massRenamer.processMethod(UIBridge.currentMethod!!, unit, unit.decompilerRef, renameEngine)
             }
         } else {
             massRenamer.processUnit(unit, renameEngine)

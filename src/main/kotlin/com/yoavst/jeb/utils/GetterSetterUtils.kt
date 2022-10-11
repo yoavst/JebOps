@@ -22,7 +22,7 @@ fun propagateRenameToGetterAndSetters(
     renameEngine: RenameEngine,
     useOnlyModified: Boolean = true
 ) {
-    val decompiler = unit.decompiler
+    val decompiler = unit.decompilerRef
 
     for (cls in classes) {
         logger.trace("Processing for getters/setters: ${cls.currentName}")

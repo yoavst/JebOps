@@ -59,7 +59,7 @@ class ResourcesNamePlugin : BasicEnginesPlugin(
     }
 
     override fun processUnit(unit: IDexUnit, renameEngine: RenameEngine) {
-        val decompiler = unit.decompiler
+        val decompiler = unit.decompilerRef
         createRForUnit(unit)
 
         if (isOperatingOnlyOnThisMethod) {

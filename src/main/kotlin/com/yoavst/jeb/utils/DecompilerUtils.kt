@@ -13,7 +13,7 @@ private object DecompilerUtils
 
 private val logger = GlobalLog.getLogger(DecompilerUtils::class.java)
 
-val IDexUnit.decompiler: IDexDecompilerUnit get() = DecompilerHelper.getDecompiler(this) as IDexDecompilerUnit
+val IDexUnit.decompilerRef: IDexDecompilerUnit get() = DecompilerHelper.getDecompiler(this) as IDexDecompilerUnit
 
 fun IDexDecompilerUnit.decompileDexMethod(method: IDexMethod): IJavaMethod? {
     try {

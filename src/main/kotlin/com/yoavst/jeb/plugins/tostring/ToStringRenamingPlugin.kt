@@ -25,7 +25,7 @@ class ToStringRenamingPlugin : BasicEnginesPlugin(supportsClassFilter = true, de
     )
 
     override fun processUnit(unit: IDexUnit, renameEngine: RenameEngine) {
-        val decompiler = unit.decompiler
+        val decompiler = unit.decompilerRef
         if (isOperatingOnlyOnThisClass) {
             val cls = UIBridge.focusedClass?.implementingClass ?: return
             processClass(cls, decompiler, renameEngine)

@@ -6,7 +6,7 @@ import com.yoavst.jeb.bridge.UIBridge
 import com.yoavst.jeb.plugins.JEB_VERSION
 import com.yoavst.jeb.plugins.PLUGIN_VERSION
 import com.yoavst.jeb.utils.BasicEnginesPlugin
-import com.yoavst.jeb.utils.decompiler
+import com.yoavst.jeb.utils.decompilerRef
 import com.yoavst.jeb.utils.displayFileOpenSelector
 import com.yoavst.jeb.utils.renaming.RenameEngine
 import java.io.File
@@ -66,7 +66,7 @@ If you have a suggestion to add to the global list, Please contact Yoav Sternber
         if (isOperatingOnlyOnThisMethod) {
             if (UIBridge.currentMethod != null && UIBridge.currentClass != null) {
                 // you cannot see the sources of a type without implementing class
-                massRenamer.processMethod(UIBridge.currentMethod!!, unit, unit.decompiler, renameEngine)
+                massRenamer.processMethod(UIBridge.currentMethod!!, unit, unit.decompilerRef, renameEngine)
             }
         } else {
             massRenamer.processUnit(unit, renameEngine)

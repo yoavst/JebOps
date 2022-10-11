@@ -9,7 +9,7 @@ import com.pnfsoftware.jeb.core.units.code.java.IJavaField
 import com.pnfsoftware.jeb.core.units.code.java.IJavaIdentifier
 import com.pnfsoftware.jeb.util.logging.GlobalLog
 import com.yoavst.jeb.utils.currentName
-import com.yoavst.jeb.utils.decompiler
+import com.yoavst.jeb.utils.decompilerRef
 import com.yoavst.jeb.utils.originalName
 import com.yoavst.jeb.utils.originalSignature
 
@@ -73,7 +73,7 @@ object RenameBackendEngineImpl : RenameBackendEngine {
         identifier: IJavaIdentifier,
         unit: IDexUnit
     ): Boolean {
-        val decompiler = decompilerCache.getOrPut(unit, unit::getDecompiler)
+        val decompiler = decompilerCache.getOrPut(unit, unit::decompilerRef)
         if (decompiler.setIdentifierName(identifier, renameRequest.newName)) {
             logger.debug("Renamed identifier $identifier to ${renameRequest.newName}")
             return true

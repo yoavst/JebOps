@@ -23,7 +23,7 @@ class ConstArgMassRenaming(
     private var effectedMethods: MutableMap<IJavaMethod, IDexClass> = mutableMapOf()
 
     fun processUnit(unit: IDexUnit, renameEngine: RenameEngine) {
-        val decompiler = unit.decompiler
+        val decompiler = unit.decompilerRef
         var seq = getXrefs(unit).asSequence()
         seq = if (isOperatingOnlyOnThisClass) {
             seq.filter { it.classType == UIBridge.currentClass }
