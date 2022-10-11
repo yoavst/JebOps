@@ -73,7 +73,7 @@ object RenameBackendEngineImpl : RenameBackendEngine {
         identifier: IJavaIdentifier,
         unit: IDexUnit
     ): Boolean {
-        val decompiler = decompilerCache.getOrPut(unit, unit::decompiler)
+        val decompiler = decompilerCache.getOrPut(unit, unit::getDecompiler)
         if (decompiler.setIdentifierName(identifier, renameRequest.newName)) {
             logger.debug("Renamed identifier $identifier to ${renameRequest.newName}")
             return true
