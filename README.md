@@ -4,11 +4,6 @@ Set of JEB plugins and scripts for better Android reversing experience.
 
 ## Build
 
-### Offline environment
-
-Extract the provided `offline.tar.xz` to the main project's folder. You are good to go.
-Run with --offline
-
 ### Compilation
 
 1. Copy `jeb.jar` and `swt.jar` from `$JEB_HOME/bin/app` to `libs/runtime/`
@@ -77,7 +72,7 @@ public final class a01 {
     private final int d;
     private final int e;
 
-    public final int a() {
+    public int a() {
         return this.e;
     }
 
@@ -98,7 +93,7 @@ public final class a01__TS_TextViewTextChangeEvent {
     private final int d__TS_before;
     private final int e__TS_count;
 
-    public final int a__TS_getCount() {
+    public int a__TS_getCount() {
         return this.e__TS_count;
     }
 
@@ -130,21 +125,14 @@ Before:
 // PARTIAL FAILURE: ENUM SUGARING
 // The enumeration is rendered as-is instead of being sugared into a Java 5 enum.
 static final class b extends Enum {
-    public static final enum b U
+    public  final enum b U
 
-    ;
+    public  final enum b V
 
-    public static final enum b V
+    public  final enum b W
 
-    ;
+    public  final enum b X
 
-    public static final enum b W
-
-    ;
-
-    public static final enum b X
-
-    ;
     private static final b[] Y;
 
     static {
@@ -165,21 +153,14 @@ After:
 
 ```java
 static final class b__T_Enum extends Enum {
-    public static final enum b__T_Enum U__E_NONE
+    public final enum b__T_Enum U__E_NONE
 
-    ;
+    public final enum b__T_Enum V__E_START
 
-    public static final enum b__T_Enum V__E_START
+    public final enum b__T_Enum W__E_END
 
-    ;
+    public final enum b__T_Enum X__E_CENTER
 
-    public static final enum b__T_Enum W__E_END
-
-    ;
-
-    public static final enum b__T_Enum X__E_CENTER
-
-    ;
     private static final b__T_Enum[] Y;
 }
 ```

@@ -6,6 +6,7 @@ import com.pnfsoftware.jeb.core.units.code.android.dex.IDexMethod
 import com.pnfsoftware.jeb.core.units.code.java.IJavaField
 import com.pnfsoftware.jeb.core.units.code.java.IJavaIdentifier
 import com.yoavst.jeb.utils.currentName
+import java.util.*
 
 class RenameEngineImpl(
     private val frontendEngine: RenameFrontendEngine,
@@ -82,7 +83,7 @@ class RenameEngineImpl(
         // now for the real request:
         val internalNameRequest = InternalRenameRequest.ofIdentifier(
             method.currentName,
-            "get" + renameRequest.newName.capitalize(),
+            "get" + renameRequest.newName.replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString() },
             renameRequest.reason,
             renameRequest.informationalRename
         )
@@ -104,7 +105,7 @@ class RenameEngineImpl(
         // now for the real request:
         val internalNameRequest = InternalRenameRequest.ofIdentifier(
             method.currentName,
-            "set" + renameRequest.newName.capitalize(),
+            "set" + renameRequest.newName.replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString() },
             renameRequest.reason,
             renameRequest.informationalRename
         )

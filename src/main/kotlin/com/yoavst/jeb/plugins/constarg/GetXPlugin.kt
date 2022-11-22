@@ -8,6 +8,7 @@ import com.yoavst.jeb.plugins.JEB_VERSION
 import com.yoavst.jeb.plugins.PLUGIN_VERSION
 import com.yoavst.jeb.utils.*
 import com.yoavst.jeb.utils.renaming.RenameEngine
+import java.util.*
 
 class GetXPlugin : BasicEnginesPlugin(supportsClassFilter = true, defaultForScopeOnThisClass = false) {
     override fun getPluginInformation(): IPluginInformation = PluginInformation(
@@ -32,7 +33,7 @@ class GetXPlugin : BasicEnginesPlugin(supportsClassFilter = true, defaultForScop
         val currentName = method.currentName
         val name = renameEngine.getModifiedInfo(currentName)?.let { (realName, _) -> realName } ?: currentName
         if (name.startsWith("get") && name.length >= 4) {
-            val fieldName = name.substring(3).decapitalize()
+            val fieldName = name.substring(3).replaceFirstChar { it.lowercase(Locale.getDefault()) }
             when {
                 method.parameterTypes.size == 0 -> {
                     ExtendedRenamer(-1, { RenameResult(assigneeName = fieldName) }, -1)
@@ -43,7 +44,7 @@ class GetXPlugin : BasicEnginesPlugin(supportsClassFilter = true, defaultForScop
                 else -> null
             }
         } else if (name.startsWith("set") && name.length >= 4) {
-            val fieldName = name.substring(3).decapitalize()
+            val fieldName = name.substring(3).replaceFirstChar { it.lowercase(Locale.getDefault()) }
             when {
                 method.parameterTypes.size == 1 -> {
                     ExtendedRenamer(-1, { RenameResult(argumentName = fieldName) }, 0)
