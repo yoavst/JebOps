@@ -1,6 +1,7 @@
 package com.yoavst.jeb.plugins.constarg
 
 import java.io.File
+import java.util.*
 
 /**
  * File format is very simple
@@ -20,7 +21,9 @@ object RenameSignaturesFileParser {
             throw IllegalArgumentException("Invalid line: '$it'")
         }
         val constArgIndex = split[2].toIntOrNull() ?: throw IllegalArgumentException("Invalid line: '$it'")
-        val target = RenameTarget.valueOf(split[0].toLowerCase().capitalize())
+        val target = RenameTarget.valueOf(
+            split[0].lowercase(Locale.getDefault())
+            .replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString() })
         split[1] to when (target) {
             RenameTarget.Class -> ExtendedRenamer(constArgIndex, classRenamer)
             RenameTarget.Method -> ExtendedRenamer(constArgIndex, methodRenamer)
