@@ -65,7 +65,7 @@ class ConstArgMassRenaming(
             renameEngine: RenameEngine
     ) :
             BasicAstTraversal(renameEngine) {
-        override fun traverseNonCompound(statement: IStatement) {
+        override fun traverseNonCompound(statement: IJavaStatement) {
             if (statement is IJavaAssignment) {
                 // Don't crash on: "Object x;"
                 statement.right?.let { right ->
@@ -184,7 +184,7 @@ class ConstArgMassRenaming(
      */
     private inner class SimpleIdentifierPropagationTraversal(private val cls: IDexClass, renameEngine: RenameEngine) :
             BasicAstTraversal(renameEngine) {
-        override fun traverseNonCompound(statement: IStatement) {
+        override fun traverseNonCompound(statement: IJavaStatement) {
             if (statement is IJavaAssignment) {
                 val left = statement.left
                 val right = statement.right

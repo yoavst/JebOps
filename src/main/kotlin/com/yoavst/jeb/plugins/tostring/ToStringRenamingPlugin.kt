@@ -53,7 +53,7 @@ class ToStringRenamingPlugin : BasicEnginesPlugin(supportsClassFilter = true, de
 
         var expression = (method.body[0] as IJavaReturn).expression
         while (true) {
-            if (expression !is IJavaArithmeticExpression) {
+            if (expression !is IJavaOperation) {
                 logger.warn("Warning: The toString method for ${cls.name} is not just an arithmetic expression")
                 return
             }
@@ -71,9 +71,9 @@ class ToStringRenamingPlugin : BasicEnginesPlugin(supportsClassFilter = true, de
             */
             while (right is IJavaConstant) {
                 // safe because we check it before, and inside the loop
-                expression = (expression as IJavaArithmeticExpression).left
+                expression = (expression as IJavaOperation).left
 
-                if (expression !is IJavaArithmeticExpression) {
+                if (expression !is IJavaOperation) {
                     logger.debug("Warning: The toString method for ${cls.name} folds to a const toString")
                     return
                 }
@@ -104,7 +104,7 @@ class ToStringRenamingPlugin : BasicEnginesPlugin(supportsClassFilter = true, de
                     break
 
                 }
-                is IJavaArithmeticExpression -> {
+                is IJavaOperation -> {
                     /*
                          2. Left traversal to restore names
                             Example:

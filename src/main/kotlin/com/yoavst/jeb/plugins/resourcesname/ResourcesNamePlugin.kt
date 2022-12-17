@@ -2,6 +2,7 @@ package com.yoavst.jeb.plugins.resourcesname
 
 import com.pnfsoftware.jeb.core.IPluginInformation
 import com.pnfsoftware.jeb.core.PluginInformation
+import com.pnfsoftware.jeb.core.units.code.android.DexParsingException
 import com.pnfsoftware.jeb.core.units.code.android.DexUtil.bytearrayULEInt32ToInt
 import com.pnfsoftware.jeb.core.units.code.android.IDexDecompilerUnit
 import com.pnfsoftware.jeb.core.units.code.android.IDexUnit
@@ -123,7 +124,7 @@ class ResourcesNamePlugin : BasicEnginesPlugin(
             if (element is IJavaConstant && element.type?.isInt == true) {
                 val resource = intToResourceId[element.int] ?: return@visitSubElementsRecursive
 
-                val rType = decompiler.astFactories.typeFactory.createType(resource.toClass(packageSignature))
+                val rType = decompiler.highLevelContext.typeFactory.createType(resource.toClass(packageSignature))
                 val resField = decompiler.astFactories.createFieldReference(resource.toField(packageSignature))
                 val resStaticField = decompiler.astFactories.createStaticField(rType, resField)
                 parent.replaceSubElement(element, resStaticField)
@@ -146,10 +147,14 @@ class ResourcesNamePlugin : BasicEnginesPlugin(
                     // fill-array-data REGISTER, ARRAY_DATA
                     for (element in instruction.arrayData.elements) {
                         if (element.size == 4) {
-                            // 32 bit number
-                            val value = bytearrayULEInt32ToInt(element, 0)
-                            val resource = intToResourceId[value] ?: continue
-                            resource.addXref(method, unit, packageSignature, instruction)
+                            try {
+                                // 32-bit number
+                                val value = bytearrayULEInt32ToInt(element, 0)
+                                val resource = intToResourceId[value] ?: continue
+                                resource.addXref(method, unit, packageSignature, instruction)
+                            } catch (e: DexParsingException) {
+                                logger.error("Failed to decompile OP_FILL_ARRAY_DATA: ${method.address}")
+                            }
                         }
                     }
                 }

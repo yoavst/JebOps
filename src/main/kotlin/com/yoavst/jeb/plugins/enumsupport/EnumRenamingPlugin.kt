@@ -59,7 +59,7 @@ class EnumRenamingPlugin : BasicEnginesPlugin(supportsClassFilter = true, defaul
         private val classSignature: String = cls.originalSignature
         private val mapping = mutableMapOf<IJavaIdentifier, IJavaNew>()
 
-        override fun traverseNonCompound(statement: IStatement) {
+        override fun traverseNonCompound(statement: IJavaStatement) {
             if (statement !is IJavaAssignment)
                 return
 
