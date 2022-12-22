@@ -5,6 +5,11 @@
 from com.pnfsoftware.jeb.client.api import IScript, IGraphicalClientContext
 from com.pnfsoftware.jeb.core import IEnginesPlugin
 from com.pnfsoftware.jeb.core.units.code.android.dex import IDexMethod, IDexType
+from org.eclipse.swt.dnd import Clipboard, TextTransfer, Transfer
+from org.eclipse.swt.widgets import Display
+
+from java.lang import Object
+from jarray import array
 
 import utils
 
@@ -36,13 +41,10 @@ class FridaHook(IScript):
             return
 
         assert isinstance(dex_method, IDexMethod)
-        clz = dex_method.getClassType().getSignature()[1:-1].replace('/', '.')
+        clz = dex_method.getClassType().getSignature(False)[1:-1].replace('/', '.')
         method = dex_method.getName(False)
         method = BasicMethodMap.get(method, method)
-        sig = dex_method.getSignature(False)
-        this_part = "" if (dex_method.getGenericFlags() & 8) == 8 else "this"
-        if dex_method.getParameterTypes() and this_part:
-            this_part += ", "
+        sig = dex_method.getSignature(True)
 
         params_list = ', '.join('"{}"'.format(self.signature_to_frida_signature(t.getSignature(False))) for t in
                                 dex_method.getParameterTypes())
@@ -52,13 +54,15 @@ class FridaHook(IScript):
         args_list = ', '.join(args)
 
         fmt = FMT_VOID if dex_method.getReturnType().getSignature() == "V" else FMT_RET
-        print fmt.format(
+        result = fmt.format(
             class_name=clz,
             method_name=method,
             method_sig=sig,
-            this_part=this_part,
             param_list=params_list,
             args_list=args_list)
+        print result
+
+        Clipboard(Display.getDefault()).setContents(array([result], Object), array([TextTransfer.getInstance()], Transfer))
 
     def signature_to_frida_signature(self, sig):
         if not sig:
@@ -124,7 +128,7 @@ def decaptialize(name):
 FMT_RET = """Java.use("{class_name}")
     .{method_name}
     .overload({param_list})
-    .implementation = function ({this_part}{args_list}) {{
+    .implementation = function ({args_list}) {{
         console.log("before hooked {method_sig}")
         let ret = this.{method_name}({args_list})
         console.log("after hooked {method_sig}")
@@ -133,7 +137,7 @@ FMT_RET = """Java.use("{class_name}")
 FMT_VOID = """Java.use("{class_name}")
     .{method_name}
     .overload({param_list})
-    .implementation = function ({this_part}{args_list}) {{
+    .implementation = function ({args_list}) {{
         console.log("before hooked {method_sig}")
         this.{method_name}({args_list})
         console.log("after hooked {method_sig}")
