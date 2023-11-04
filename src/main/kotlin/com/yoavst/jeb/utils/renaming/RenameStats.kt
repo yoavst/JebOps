@@ -1,14 +1,14 @@
 package com.yoavst.jeb.utils.renaming
 
 import com.pnfsoftware.jeb.core.units.code.android.dex.IDexClass
+import com.pnfsoftware.jeb.core.units.code.android.dex.IDexField
 import com.pnfsoftware.jeb.core.units.code.android.dex.IDexMethod
-import com.pnfsoftware.jeb.core.units.code.java.IJavaField
 import com.pnfsoftware.jeb.core.units.code.java.IJavaIdentifier
 
 class RenameStats {
     val renamedClasses: MutableMap<IDexClass, RenameRequest> = mutableMapOf()
     val renamedMethods: MutableMap<IDexMethod, RenameRequest> = mutableMapOf()
-    val renamedFields: MutableMap<IJavaField, RenameRequest> = mutableMapOf()
+    val renamedFields: MutableMap<IDexField, RenameRequest> = mutableMapOf()
     val renamedIdentifiers: MutableMap<IJavaIdentifier, RenameRequest> = mutableMapOf()
     val effectedClasses: MutableSet<IDexClass> = mutableSetOf()
 

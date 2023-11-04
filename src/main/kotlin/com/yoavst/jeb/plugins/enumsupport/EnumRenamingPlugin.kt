@@ -2,10 +2,9 @@ package com.yoavst.jeb.plugins.enumsupport
 
 import com.pnfsoftware.jeb.core.IPluginInformation
 import com.pnfsoftware.jeb.core.PluginInformation
-import com.pnfsoftware.jeb.core.units.code.android.IDexDecompilerUnit
 import com.pnfsoftware.jeb.core.units.code.android.IDexUnit
 import com.pnfsoftware.jeb.core.units.code.android.dex.IDexClass
-import com.pnfsoftware.jeb.core.units.code.java.*
+import com.pnfsoftware.jeb.core.units.code.android.dex.IDexMethod
 import com.yoavst.jeb.bridge.UIBridge
 import com.yoavst.jeb.plugins.JEB_VERSION
 import com.yoavst.jeb.plugins.PLUGIN_VERSION
@@ -35,63 +34,67 @@ class EnumRenamingPlugin : BasicEnginesPlugin(supportsClassFilter = true, defaul
     )
 
     override fun processUnit(unit: IDexUnit, renameEngine: RenameEngine) {
-        val decompiler = unit.decompilerRef
         if (isOperatingOnlyOnThisClass) {
             val cls = UIBridge.focusedClass?.implementingClass ?: return
-            processClass(cls, decompiler, renameEngine)
+            processClass(cls, renameEngine)
         } else {
             unit.subclassesOf("Ljava/lang/Enum;").filter(classFilter::matches)
-                .forEach { processClass(it, decompiler, renameEngine) }
+                .forEach { processClass(it, renameEngine) }
         }
         unit.refresh()
     }
 
-    private fun processClass(cls: IDexClass, decompiler: IDexDecompilerUnit, renameEngine: RenameEngine) {
+
+    private fun processClass(cls: IDexClass, renameEngine: RenameEngine) {
         logger.trace("Processing enum: $cls")
-        val staticConstructor = cls.methods.first { it.originalName == "<clinit>" }
-        val decompiledStaticConstructor = decompiler.decompileDexMethod(staticConstructor) ?: return
-        EnumAstTraversal(cls, renameEngine).traverse(decompiledStaticConstructor)
+        val staticConstructor = cls.methods.firstOrNull { it.originalName == "<clinit>" } ?: run {
+            logger.info("Enum without static initializer: ${cls.name}")
+            return
+        }
+        val constructors = cls.methods.filter { it.originalName == "<init>" }
+
+        if (constructors.isEmpty()) {
+            logger.info("Enum without constructor: ${cls.name}")
+            return
+        }
+
+
+        if (constructors.size == 1 && constructors[0].parameterTypes.size == 0) {
+            // Enum with an empty constructor, Therefore it has at most one instance
+            processSingletonEnum(cls, constructors[0], renameEngine)
+        } else {
+            if (constructors.any { it.parameterTypes.size == 0 || it.parameterTypes[0].signature != "Ljava/lang/String;" }) {
+                if (constructors.size == 1) {
+                    // Assume it is a singleton enum
+                    processSingletonEnum(cls, constructors[0], renameEngine)
+                } else {
+                    logger.warning("Normal Enum with constructor receiving non string type at first index: ${cls.name}")
+                }
+            } else {
+                // Normal enum
+                MultiEnumStaticConstructorSimulator(cls, constructors, renameEngine).run(staticConstructor)
+            }
+        }
+
         renameEngine.renameClass(RenameRequest("Enum", RenameReason.Type, informationalRename = true), cls)
     }
 
-    private class EnumAstTraversal(private val cls: IDexClass, renameEngine: RenameEngine) :
-        BasicAstTraversal(renameEngine) {
-        private val classSignature: String = cls.originalSignature
-        private val mapping = mutableMapOf<IJavaIdentifier, IJavaNew>()
+    fun processSingletonEnum(clazz: IDexClass, constructor: IDexMethod, renameEngine: RenameEngine) {
+        val superMethod = constructor.dex.getMethod("Ljava/lang/Enum;-><init>(Ljava/lang/String;I)V")
 
-        override fun traverseNonCompound(statement: IJavaStatement) {
-            if (statement !is IJavaAssignment)
-                return
+        val simulator = SingleEnumConstructorSimulator(clazz, setOf(superMethod.prototypeIndex), renameEngine)
+        simulator.run(constructor)
 
-            val right = when (val originalRight = statement.right) {
-                is IJavaNew -> originalRight
-                is IJavaIdentifier -> mapping.getOrElse(originalRight) { return }
-                else -> return
+        if (simulator.name != null) {
+            // Find enum field
+            val matchingFields = clazz.fields.filter { it.fieldTypeIndex == clazz.classTypeIndex }
+            if (matchingFields.size != 1) {
+                logger.warning("Found multiple matching field in ${clazz.name}. Cannot rename to ${simulator.name}")
+            } else {
+                renameEngine.renameField(RenameRequest(simulator.name!!, RenameReason.EnumName), matchingFields[0], clazz)
             }
-
-            when (val left = statement.left) {
-                is IJavaIdentifier -> {
-                    mapping[left] = right
-                }
-                is IJavaDefinition -> {
-                    if (left.type.signature == classSignature)
-                        mapping[left.identifier] = right
-                }
-                is IJavaStaticField -> {
-                    if (right.type.signature != classSignature)
-                        return
-
-                    val constString = right.arguments.firstOrNull { it is IJavaConstant && it.isString }
-                    if (constString != null) {
-                        val newName = (constString as IJavaConstant).string
-                        renameEngine.renameField(
-                            RenameRequest(newName, RenameReason.EnumName),
-                            left.field ?: return,
-                            cls
-                        )
-                    }
-                }
-            }
+        } else {
+            logger.info("Could not rename singleton enum: ${clazz.name}")
         }
     }
 }

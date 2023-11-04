@@ -2,6 +2,7 @@ package com.yoavst.jeb.utils.renaming
 
 import com.pnfsoftware.jeb.core.units.code.android.IDexUnit
 import com.pnfsoftware.jeb.core.units.code.android.dex.IDexClass
+import com.pnfsoftware.jeb.core.units.code.android.dex.IDexField
 import com.pnfsoftware.jeb.core.units.code.android.dex.IDexMethod
 import com.pnfsoftware.jeb.core.units.code.java.IJavaField
 import com.pnfsoftware.jeb.core.units.code.java.IJavaIdentifier
@@ -37,6 +38,21 @@ class RenameEngineImpl(
         )
         val finalRenameRequest = frontendEngine.applyRules(internalRenameRequest) ?: return
         if (backendEngine.renameField(finalRenameRequest, field, cls)) {
+            stats.renamedFields[cls.dex.getField(field.signature)] = renameRequest
+            stats.effectedClasses.add(cls)
+        }
+    }
+
+    override fun renameField(renameRequest: RenameRequest, field: IDexField, cls: IDexClass) {
+        val name = field.currentName
+        val internalRenameRequest = InternalRenameRequest.ofField(
+            name,
+            renameRequest.newName,
+            renameRequest.reason,
+            renameRequest.informationalRename
+        )
+        val finalRenameRequest = frontendEngine.applyRules(internalRenameRequest) ?: return
+        if (backendEngine.renameField(finalRenameRequest, field)) {
             stats.renamedFields[field] = renameRequest
             stats.effectedClasses.add(cls)
         }
