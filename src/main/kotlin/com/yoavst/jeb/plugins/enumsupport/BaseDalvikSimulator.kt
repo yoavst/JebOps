@@ -83,7 +83,7 @@ abstract class BaseDalvikSimulator(protected val clazz: IDexClass, protected val
     protected fun getMethod(index: Long): IDexMethod = unit.getMethod(index.toInt())
 
 
-    protected inline fun trace(state: () -> String) {
+    protected inline fun trace(@Suppress("UNUSED_PARAMETER") state: () -> String) {
 //        logger.trace("$className ${state()}")
     }
 
