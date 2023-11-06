@@ -49,18 +49,39 @@ class SourceFilePlugin : BasicEnginesPlugin(supportsClassFilter = true, defaultF
         if (!shouldAddComment && !shouldAddToTypeName)
             return
 
-        var seq = unit.classes.asSequence()
-        seq = if (isOperatingOnlyOnThisClass) {
-            seq.filter { it.classType == UIBridge.currentClass }
+        var i = 0
+        if (isOperatingOnlyOnThisClass) {
+            unit.classes
+                    .parallelStream()
+                    .filter { it.classType == UIBridge.currentClass }
+                    .filter { it.sourceStringIndex != -1 }
+                    .forEach {
+                        i++
+                        processClass(unit, it, renameEngine)
+                    }
         } else {
-            seq.filter(classFilter::matches)
+            unit.classes
+                    .parallelStream()
+                    .filter(classFilter::matches)
+                    .filter { it.sourceStringIndex != -1 }
+                    .forEach {
+                        i++
+                        processClass(unit, it, renameEngine)
+                    }
         }
 
-        var i = 0
-        seq.filter { it.sourceStringIndex != -1 }.forEach {
-            i++
-            processClass(unit, it, renameEngine)
-        }
+        // var seq = unit.classes.asSequence()
+        // if (isOperatingOnlyOnThisClass) {
+        //     seq.filter { it.classType == UIBridge.currentClass }
+        // } else {
+        //     seq.filter(classFilter::matches)
+        // }
+
+        // var i = 0
+        // seq.filter { it.sourceStringIndex != -1 }.forEach {
+        //     i++
+        //     processClass(unit, it, renameEngine)
+        // }
         logger.info("There are $i classes with source info")
     }
 

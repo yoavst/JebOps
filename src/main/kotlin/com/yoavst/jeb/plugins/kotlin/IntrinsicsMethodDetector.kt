@@ -73,12 +73,15 @@ object IntrinsicsMethodDetector {
             method.parameterTypes[0].originalSignature == "Ljava/lang/Throwable;" -> {
                 return IntrinsicDetectionResult("sanitizeStackTrace")
             }
+
             method.parameterTypes[0].originalSignature == "Ljava/lang/Object;" -> {
                 return IntrinsicDetectionResult("checkNotNull")
             }
+
             method.returnType.originalSignature == "Ljava/lang/String;" -> {
                 return IntrinsicDetectionResult("createParameterIsNullExceptionMessage")
             }
+
             else -> {
                 @Suppress("UNCHECKED_CAST")
                 val instructions = method.instructions as List<IDalvikInstruction>
@@ -99,6 +102,7 @@ object IntrinsicsMethodDetector {
                                             IntrinsicDetectionResult("throwParameterIsNullIAE")
                                         }
                                     }
+
                                     "Ljava/lang/NullPointerException;" -> {
                                         return if (method.genericFlags and ICodeItem.FLAG_PUBLIC != 0) {
                                             IntrinsicDetectionResult("throwJavaNpe")
@@ -145,9 +149,11 @@ object IntrinsicsMethodDetector {
             "Z" -> {
                 return IntrinsicDetectionResult("areEqual")
             }
+
             "I" -> {
                 return IntrinsicDetectionResult("compare")
             }
+
             "Ljava/lang/Throwable;" -> {
                 return IntrinsicDetectionResult("sanitizeStackTrace")
             }
@@ -159,11 +165,13 @@ object IntrinsicsMethodDetector {
                     "Ljava/lang/String;" -> {
                         return IntrinsicDetectionResult("checkHasClass")
                     }
+
                     "Ljava/lang/Object;" -> {
                         return IntrinsicDetectionResult("stringPlus")
                     }
                 }
             }
+
             "I" -> {
                 if (method.parameterTypes[1].signature == "Ljava/lang/String;") {
                     return IntrinsicDetectionResult("reifiedOperationMarker")

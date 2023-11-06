@@ -6,7 +6,7 @@ import com.pnfsoftware.jeb.core.units.code.android.dex.IDexMethod
 import com.yoavst.jeb.utils.renaming.RenameEngine
 
 class SingleEnumConstructorSimulator(clazz: IDexClass, private val superInits: Set<Int>, renameEngine: RenameEngine) :
-    BaseDalvikSimulator(clazz, renameEngine) {
+        BaseDalvikSimulator(clazz, renameEngine) {
     var name: String? = null
     private var thisInstance = RegisterValue.EnumInstanceValue(null)
 

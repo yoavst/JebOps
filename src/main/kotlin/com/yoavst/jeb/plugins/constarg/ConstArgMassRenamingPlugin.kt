@@ -1,6 +1,9 @@
 package com.yoavst.jeb.plugins.constarg
 
-import com.pnfsoftware.jeb.core.*
+import com.pnfsoftware.jeb.core.BooleanOptionDefinition
+import com.pnfsoftware.jeb.core.IOptionDefinition
+import com.pnfsoftware.jeb.core.IPluginInformation
+import com.pnfsoftware.jeb.core.PluginInformation
 import com.pnfsoftware.jeb.core.units.code.android.IDexUnit
 import com.yoavst.jeb.bridge.UIBridge
 import com.yoavst.jeb.plugins.JEB_VERSION
@@ -12,26 +15,26 @@ import com.yoavst.jeb.utils.renaming.RenameEngine
 import java.io.File
 
 class ConstArgMassRenamingPlugin :
-    BasicEnginesPlugin(
-        supportsClassFilter = true,
-        defaultForScopeOnThisClass = false,
-        defaultForScopeOnThisFunction = false,
-    ) {
+        BasicEnginesPlugin(
+                supportsClassFilter = true,
+                defaultForScopeOnThisClass = false,
+                defaultForScopeOnThisFunction = false,
+        ) {
     private lateinit var signatures: Map<String, ExtendedRenamer>
     override fun getPluginInformation(): IPluginInformation = PluginInformation(
-        "Const arg mass renaming plugin",
-        "Fire the plugin to change names using information from a constant string argument to function",
-        "Yoav Sternberg",
-        PLUGIN_VERSION,
-        JEB_VERSION,
-        null
+            "Const arg mass renaming plugin",
+            "Fire the plugin to change names using information from a constant string argument to function",
+            "Yoav Sternberg",
+            PLUGIN_VERSION,
+            JEB_VERSION,
+            null
     )
 
     override fun getExecutionOptionDefinitions(): List<IOptionDefinition> {
         return super.getExecutionOptionDefinitions() + BooleanOptionDefinition(
-            USE_BUILTIN,
-            true,
-            """Use the builtin method signature list. It supports Bundle, Intent, ContentValues and shared preferences.
+                USE_BUILTIN,
+                true,
+                """Use the builtin method signature list. It supports Bundle, Intent, ContentValues and shared preferences.
 If you have a suggestion to add to the global list, Please contact Yoav Sternberg."""
         )
     }
@@ -53,14 +56,14 @@ If you have a suggestion to add to the global list, Please contact Yoav Sternber
             }
         } else {
             signatures =
-                RenameSignaturesFileParser.parseSignatures(javaClass.classLoader.getResource("rename_signatures.md")!!.readText(), ".")
+                    RenameSignaturesFileParser.parseSignatures(javaClass.classLoader.getResource("rename_signatures.md")!!.readText(), ".")
         }
         return true
     }
 
     override fun processUnit(unit: IDexUnit, renameEngine: RenameEngine) {
         val massRenamer = ConstArgMassRenaming(
-            signatures, isOperatingOnlyOnThisClass, classFilter
+                signatures, isOperatingOnlyOnThisClass, classFilter
         )
 
         if (isOperatingOnlyOnThisMethod) {

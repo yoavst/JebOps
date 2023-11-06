@@ -9,10 +9,10 @@ import com.yoavst.jeb.utils.renaming.RenameReason
 import com.yoavst.jeb.utils.renaming.RenameRequest
 
 class MultiEnumStaticConstructorSimulator(
-    clazz: IDexClass,
-    constructors: List<IDexMethod>,
-    renameEngine: RenameEngine
-): BaseDalvikSimulator(clazz, renameEngine) {
+        clazz: IDexClass,
+        constructors: List<IDexMethod>,
+        renameEngine: RenameEngine
+) : BaseDalvikSimulator(clazz, renameEngine) {
     private val constructorIndices = constructors.mapTo(mutableSetOf()) { it.prototypeIndex }
 
     override fun onInvokeDirect(instruction: IDalvikInstruction) {
@@ -27,9 +27,9 @@ class MultiEnumStaticConstructorSimulator(
             } else {
                 // the enum constructor was moved to a subclass
                 val singleEnumConstructorSimulator = SingleEnumConstructorSimulator(
-                    invokedMethod.classType.implementingClass!!,
-                    constructorIndices,
-                    renameEngine
+                        invokedMethod.classType.implementingClass!!,
+                        constructorIndices,
+                        renameEngine
                 )
                 singleEnumConstructorSimulator.run(invokedMethod)
                 if (singleEnumConstructorSimulator.name != null) {
@@ -90,7 +90,7 @@ class MultiEnumStaticConstructorSimulator(
                             return
                         }
                         trace { "Renaming $field to ${value.value}" }
-                      renameEngine.renameField(RenameRequest(value.value!!, RenameReason.EnumName), field, clazz)
+                        renameEngine.renameField(RenameRequest(value.value!!, RenameReason.EnumName), field, clazz)
                     }
 
                     is RegisterValue.StringValue, null -> {

@@ -17,10 +17,10 @@ private object GetterSetterUtils
 private val logger = GlobalLog.getLogger(GetterSetterUtils::class.java)
 
 fun propagateRenameToGetterAndSetters(
-    unit: IDexUnit,
-    classes: Iterable<IDexClass>,
-    renameEngine: RenameEngine,
-    useOnlyModified: Boolean = true
+        unit: IDexUnit,
+        classes: Iterable<IDexClass>,
+        renameEngine: RenameEngine,
+        useOnlyModified: Boolean = true
 ) {
     val decompiler = unit.decompilerRef
 
@@ -38,11 +38,11 @@ fun propagateRenameToGetterAndSetters(
 
 /** rebuild getter and setters e.g void a(object o){this.a = o;} to void setA(object o); **/
 private fun processPossibleGetterSetter(
-    method: IDexMethod,
-    decompiledMethod: IJavaMethod,
-    cls: IDexClass,
-    renameEngine: RenameEngine,
-    useOnlyModified: Boolean
+        method: IDexMethod,
+        decompiledMethod: IJavaMethod,
+        cls: IDexClass,
+        renameEngine: RenameEngine,
+        useOnlyModified: Boolean
 ) {
     if (decompiledMethod.body.size() != 1)
         return
@@ -62,18 +62,21 @@ private fun processPossibleGetterSetter(
                 val currentName = right.field.currentName(cls)
                 val (actualCurrentName, renameReason) = when {
                     currentName != null && useOnlyModified -> renameEngine.getModifiedInfo(currentName) ?: return
-                    currentName != null && !useOnlyModified -> renameEngine.getModifiedInfo(currentName) ?: (name to RenameReason.FieldName)
+                    currentName != null && !useOnlyModified -> renameEngine.getModifiedInfo(currentName)
+                            ?: (name to RenameReason.FieldName)
+
                     currentName == null && useOnlyModified -> return
                     else -> name to RenameReason.FieldName
                 }
 
                 renameEngine.renameGetter(
-                    RenameRequest(actualCurrentName, renameReason ?: RenameReason.FieldName),
-                    method,
-                    cls
+                        RenameRequest(actualCurrentName, renameReason ?: RenameReason.FieldName),
+                        method,
+                        cls
                 )
             }
         }
+
         is IJavaAssignment -> {
             val left = statement.left
             if (left is IJavaInstanceField) {
@@ -86,15 +89,17 @@ private fun processPossibleGetterSetter(
                 val currentName = left.field.currentName(cls)
                 val (actualCurrentName, renameReason) = when {
                     currentName != null && useOnlyModified -> renameEngine.getModifiedInfo(currentName) ?: return
-                    currentName != null && !useOnlyModified -> renameEngine.getModifiedInfo(currentName) ?: (name to RenameReason.FieldName)
+                    currentName != null && !useOnlyModified -> renameEngine.getModifiedInfo(currentName)
+                            ?: (name to RenameReason.FieldName)
+
                     currentName == null && useOnlyModified -> return
                     else -> name to RenameReason.FieldName
                 }
 
                 renameEngine.renameSetter(
-                    RenameRequest(actualCurrentName, renameReason ?: RenameReason.FieldName),
-                    method,
-                    cls
+                        RenameRequest(actualCurrentName, renameReason ?: RenameReason.FieldName),
+                        method,
+                        cls
                 )
             }
         }

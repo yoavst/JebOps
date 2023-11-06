@@ -25,12 +25,12 @@ cls.a = temp
  */
 class EnumRenamingPlugin : BasicEnginesPlugin(supportsClassFilter = true, defaultForScopeOnThisClass = false) {
     override fun getPluginInformation(): IPluginInformation = PluginInformation(
-        "Enum fields renaming",
-        "Fire the plugin to change obfuscated enum field names to their real name if available",
-        "Yoav Sternberg",
-        PLUGIN_VERSION,
-        JEB_VERSION,
-        null
+            "Enum fields renaming",
+            "Fire the plugin to change obfuscated enum field names to their real name if available",
+            "Yoav Sternberg",
+            PLUGIN_VERSION,
+            JEB_VERSION,
+            null
     )
 
     override fun processUnit(unit: IDexUnit, renameEngine: RenameEngine) {
@@ -39,7 +39,7 @@ class EnumRenamingPlugin : BasicEnginesPlugin(supportsClassFilter = true, defaul
             processClass(cls, renameEngine)
         } else {
             unit.subclassesOf("Ljava/lang/Enum;").filter(classFilter::matches)
-                .forEach { processClass(it, renameEngine) }
+                    .forEach { processClass(it, renameEngine) }
         }
         unit.refresh()
     }
