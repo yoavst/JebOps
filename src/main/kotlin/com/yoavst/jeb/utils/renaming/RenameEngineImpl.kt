@@ -10,16 +10,16 @@ import com.yoavst.jeb.utils.currentName
 import java.util.*
 
 class RenameEngineImpl(
-    private val frontendEngine: RenameFrontendEngine,
-    private val backendEngine: RenameBackendEngine
+        private val frontendEngine: RenameFrontendEngine,
+        private val backendEngine: RenameBackendEngine
 ) : RenameEngine {
     override val stats: RenameStats = RenameStats()
     override fun renameClass(renameRequest: RenameRequest, cls: IDexClass) {
         val internalRenameRequest = InternalRenameRequest.ofClass(
-            cls.currentName,
-            renameRequest.newName,
-            renameRequest.reason,
-            renameRequest.informationalRename
+                cls.currentName,
+                renameRequest.newName,
+                renameRequest.reason,
+                renameRequest.informationalRename
         )
         val finalRenameRequest = frontendEngine.applyRules(internalRenameRequest) ?: return
         if (backendEngine.renameClass(finalRenameRequest, cls)) {
@@ -31,10 +31,10 @@ class RenameEngineImpl(
     override fun renameField(renameRequest: RenameRequest, field: IJavaField, cls: IDexClass) {
         val name = field.currentName(cls) ?: return
         val internalRenameRequest = InternalRenameRequest.ofField(
-            name,
-            renameRequest.newName,
-            renameRequest.reason,
-            renameRequest.informationalRename
+                name,
+                renameRequest.newName,
+                renameRequest.reason,
+                renameRequest.informationalRename
         )
         val finalRenameRequest = frontendEngine.applyRules(internalRenameRequest) ?: return
         if (backendEngine.renameField(finalRenameRequest, field, cls)) {
@@ -46,10 +46,10 @@ class RenameEngineImpl(
     override fun renameField(renameRequest: RenameRequest, field: IDexField, cls: IDexClass) {
         val name = field.currentName
         val internalRenameRequest = InternalRenameRequest.ofField(
-            name,
-            renameRequest.newName,
-            renameRequest.reason,
-            renameRequest.informationalRename
+                name,
+                renameRequest.newName,
+                renameRequest.reason,
+                renameRequest.informationalRename
         )
         val finalRenameRequest = frontendEngine.applyRules(internalRenameRequest) ?: return
         if (backendEngine.renameField(finalRenameRequest, field)) {
@@ -60,10 +60,10 @@ class RenameEngineImpl(
 
     override fun renameMethod(renameRequest: RenameRequest, method: IDexMethod, cls: IDexClass) {
         val internalRenameRequest = InternalRenameRequest.ofMethod(
-            method.currentName,
-            renameRequest.newName,
-            renameRequest.reason,
-            renameRequest.informationalRename
+                method.currentName,
+                renameRequest.newName,
+                renameRequest.reason,
+                renameRequest.informationalRename
         )
         val finalRenameRequest = frontendEngine.applyRules(internalRenameRequest) ?: return
         if (backendEngine.renameMethod(finalRenameRequest, method, cls)) {
@@ -74,10 +74,10 @@ class RenameEngineImpl(
 
     override fun renameIdentifier(renameRequest: RenameRequest, identifier: IJavaIdentifier, unit: IDexUnit) {
         val internalRenameRequest = InternalRenameRequest.ofIdentifier(
-            identifier.currentName(unit),
-            renameRequest.newName,
-            renameRequest.reason,
-            renameRequest.informationalRename
+                identifier.currentName(unit),
+                renameRequest.newName,
+                renameRequest.reason,
+                renameRequest.informationalRename
         )
         val finalRenameRequest = frontendEngine.applyRules(internalRenameRequest) ?: return
         if (backendEngine.renameIdentifier(finalRenameRequest, identifier, unit)) {
@@ -90,18 +90,18 @@ class RenameEngineImpl(
 
     override fun renameGetter(renameRequest: RenameRequest, method: IDexMethod, cls: IDexClass) {
         val preInternalNameRequest = InternalRenameRequest.ofIdentifier(
-            method.currentName,
-            renameRequest.newName,
-            renameRequest.reason,
-            renameRequest.informationalRename
+                method.currentName,
+                renameRequest.newName,
+                renameRequest.reason,
+                renameRequest.informationalRename
         )
         frontendEngine.applyRules(preInternalNameRequest) ?: return
         // now for the real request:
         val internalNameRequest = InternalRenameRequest.ofIdentifier(
-            method.currentName,
-            "get" + renameRequest.newName.replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString() },
-            renameRequest.reason,
-            renameRequest.informationalRename
+                method.currentName,
+                "get" + renameRequest.newName.replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString() },
+                renameRequest.reason,
+                renameRequest.informationalRename
         )
         val finalRequest = frontendEngine.applyRules(internalNameRequest) ?: return
         if (backendEngine.renameMethod(finalRequest, method, cls)) {
@@ -112,18 +112,18 @@ class RenameEngineImpl(
 
     override fun renameSetter(renameRequest: RenameRequest, method: IDexMethod, cls: IDexClass) {
         val preInternalNameRequest = InternalRenameRequest.ofIdentifier(
-            method.currentName,
-            renameRequest.newName,
-            renameRequest.reason,
-            renameRequest.informationalRename
+                method.currentName,
+                renameRequest.newName,
+                renameRequest.reason,
+                renameRequest.informationalRename
         )
         frontendEngine.applyRules(preInternalNameRequest) ?: return
         // now for the real request:
         val internalNameRequest = InternalRenameRequest.ofIdentifier(
-            method.currentName,
-            "set" + renameRequest.newName.replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString() },
-            renameRequest.reason,
-            renameRequest.informationalRename
+                method.currentName,
+                "set" + renameRequest.newName.replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString() },
+                renameRequest.reason,
+                renameRequest.informationalRename
         )
         val finalRequest = frontendEngine.applyRules(internalNameRequest) ?: return
         if (backendEngine.renameMethod(finalRequest, method, cls)) {

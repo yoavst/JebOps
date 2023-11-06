@@ -17,21 +17,24 @@ object RenameFrontendEngineImpl : RenameFrontendEngine {
                     if (currentName[0].isUpperCase() && currentName.any(Char::isLowerCase))
                         return null
                 }
+
                 RenameObjectType.Method -> {
                     // is it getter or setter or constructor
                     if (currentName.startsWith("get") || currentName.startsWith("set") ||
-                        currentName == "<init>" || currentName == "<clinit>"
+                            currentName == "<init>" || currentName == "<clinit>"
                     )
                         return null
                     // is it a camelCase?
                     if (currentName[0].isLowerCase() && currentName.any(Char::isUpperCase))
                         return null
                 }
+
                 RenameObjectType.Field -> {
                     // check for mVariable or sVariable
                     if ((currentName[0] == 'm' || currentName[0] == 's') && currentName[1].isUpperCase())
                         return null
                 }
+
                 RenameObjectType.Identifier -> {
                     if (currentName[0].isLowerCase() && currentName.any(Char::isUpperCase))
                         return null
@@ -45,28 +48,28 @@ object RenameFrontendEngineImpl : RenameFrontendEngine {
         if (informationalRename) {
             // we want to keep the current name
             return InternalRenameRequest(
-                type,
-                currentName,
-                "${currentModifiedName}__${reason.prefix}_${newNameSanitized}",
-                reason,
-                informationalRename
+                    type,
+                    currentName,
+                    "${currentModifiedName}__${reason.prefix}_${newNameSanitized}",
+                    reason,
+                    informationalRename
             )
         } else if (type == RenameObjectType.Identifier) {
             // We want to erase the previous name since it isn't a real name
             return InternalRenameRequest(
-                type,
-                currentName,
-                "__${reason.prefix}_${newNameSanitized}",
-                reason,
-                informationalRename
+                    type,
+                    currentName,
+                    "__${reason.prefix}_${newNameSanitized}",
+                    reason,
+                    informationalRename
             )
         } else {
             return InternalRenameRequest(
-                type,
-                currentName,
-                "${currentModifiedName.extractOriginalName()}__${reason.prefix}_${newNameSanitized}",
-                reason,
-                informationalRename
+                    type,
+                    currentName,
+                    "${currentModifiedName.extractOriginalName()}__${reason.prefix}_${newNameSanitized}",
+                    reason,
+                    informationalRename
             )
         }
 

@@ -58,7 +58,7 @@ object RenameBackendEngineImpl : RenameBackendEngine {
     }
 
     override fun renameField(renameRequest: InternalRenameRequest, field: IDexField): Boolean =
-        field.setName(renameRequest.newName)
+            field.setName(renameRequest.newName)
 
     override fun renameMethod(renameRequest: InternalRenameRequest, method: IDexMethod, cls: IDexClass): Boolean {
         if (method.setName(renameRequest.newName)) {
@@ -69,9 +69,9 @@ object RenameBackendEngineImpl : RenameBackendEngine {
     }
 
     override fun renameIdentifier(
-        renameRequest: InternalRenameRequest,
-        identifier: IJavaIdentifier,
-        unit: IDexUnit
+            renameRequest: InternalRenameRequest,
+            identifier: IJavaIdentifier,
+            unit: IDexUnit
     ): Boolean {
         val decompiler = decompilerCache.getOrPut(unit, unit::decompilerRef)
         if (decompiler.setIdentifierName(identifier, renameRequest.newName)) {

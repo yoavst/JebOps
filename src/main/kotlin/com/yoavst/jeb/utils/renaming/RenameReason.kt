@@ -14,11 +14,13 @@ enum class RenameReason(val prefix: String) : Comparable<RenameReason> {
     ToString("TS"),
     EnumName("E"),
     KotlinName("KT"),
+
     /** The user renamed the class. Should not be used as a reason */
     User("");
 
     companion object {
         const val MAX_PREFIX_LENGTH = 2
+
         /** Allocate it once for performance reason */
         private val VALUES = values()
 

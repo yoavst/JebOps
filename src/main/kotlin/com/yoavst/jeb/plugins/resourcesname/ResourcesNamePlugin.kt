@@ -30,19 +30,19 @@ import javax.xml.parsers.DocumentBuilderFactory
  *      should we add xrefs support for this case?
  */
 class ResourcesNamePlugin : BasicEnginesPlugin(
-    supportsClassFilter = true, defaultForScopeOnThisClass = false,
-    defaultForScopeOnThisFunction = false
+        supportsClassFilter = true, defaultForScopeOnThisClass = false,
+        defaultForScopeOnThisFunction = false
 ) {
     private lateinit var resources: MultiMap<String, ResourceId>
     private lateinit var intToResourceId: Map<Int, ResourceId>
 
     override fun getPluginInformation(): IPluginInformation = PluginInformation(
-        "Resources name restore",
-        "Fire the plugin to recreate R class and replace constants in code",
-        "Yoav Sternberg",
-        PLUGIN_VERSION,
-        JEB_VERSION,
-        null
+            "Resources name restore",
+            "Fire the plugin to recreate R class and replace constants in code",
+            "Yoav Sternberg",
+            PLUGIN_VERSION,
+            JEB_VERSION,
+            null
     )
 
     override fun preProcess(): Boolean {
@@ -76,14 +76,19 @@ class ResourcesNamePlugin : BasicEnginesPlugin(
                 processClass(UIBridge.currentClass!!.implementingClass!!, decompiler, renameEngine)
             }
         } else {
-            unit.classes.asSequence().filter(classFilter::matches).onEach {
-                processClass(it, decompiler, renameEngine)
-            }.flatMap(IDexClass::getMethods)
-                .forEach { preProcessMethod(it, unit, decompiler, renameEngine) }
+            unit.classes.parallelStream()
+                    .filter(classFilter::matches)
+                    .peek { processClass(it, decompiler, renameEngine) }
+                    .forEach {
+                        it.methods.parallelStream().forEach {
+                            preProcessMethod(it, unit, decompiler, renameEngine)
+                        }
+                    }
         }
     }
 
     private fun processClass(cls: IDexClass, decompiler: IDexDecompilerUnit, renameEngine: RenameEngine) {
+        // Take a class, check if it has static fields which can be converted to resource names.
         // check if we have a static field which is a resource
         cls.fields.asSequence().filter { it.staticInitializer?.type == IDexValue.VALUE_INT }.forEach { field ->
             val intValue = field.staticInitializer!!.int
@@ -94,6 +99,7 @@ class ResourcesNamePlugin : BasicEnginesPlugin(
     }
 
     private fun preProcessMethod(method: IDexMethod, unit: IDexUnit, decompiler: IDexDecompilerUnit, engine: RenameEngine) {
+        // Check if a method uses a resource ID and if yes decompile it and rename
         if (method.isInternal && method.instructions != null) {
             @Suppress("UNCHECKED_CAST")
             val instructions = method.instructions as List<IDalvikInstruction>
@@ -143,6 +149,7 @@ class ResourcesNamePlugin : BasicEnginesPlugin(
                     val resource = intToResourceId[value] ?: continue
                     resource.addXref(method, unit, packageSignature, instruction)
                 }
+
                 instruction.opcode == DalvikInstructionOpcodes.OP_FILL_ARRAY_DATA -> {
                     // fill-array-data REGISTER, ARRAY_DATA
                     for (element in instruction.arrayData.elements) {
@@ -158,6 +165,7 @@ class ResourcesNamePlugin : BasicEnginesPlugin(
                         }
                     }
                 }
+
                 instruction.isSwitch -> {
                     // switch data consists of pairs (value, address)
                     for ((value, _) in instruction.switchData.elements) {
@@ -171,9 +179,9 @@ class ResourcesNamePlugin : BasicEnginesPlugin(
 
     private fun ResourceId.addXref(method: IDexMethod, unit: IDexUnit, packageSignature: String, instruction: IDalvikInstruction) {
         unit.referenceManager.addFieldReference(
-            toField(packageSignature),
-            "${method.signature}+${instruction.offset}",
-            DexReferenceType.GET
+                toField(packageSignature),
+                "${method.signature}+${instruction.offset}",
+                DexReferenceType.GET
         )
     }
 
@@ -207,7 +215,7 @@ class ResourcesNamePlugin : BasicEnginesPlugin(
     }
 
     private fun parseAndroidPublicXml(): Pair<MultiMap<String, ResourceId>, Map<Int, ResourceId>> =
-        javaClass.classLoader.getResourceAsStream("aosp_public.xml")!!.toXmlDocument().parsePublicXml(isSystem = true)
+            javaClass.classLoader.getResourceAsStream("aosp_public.xml")!!.toXmlDocument().parsePublicXml(isSystem = true)
 
     private fun InputStream.toXmlDocument(): Document {
         val factory = DocumentBuilderFactory.newInstance()
