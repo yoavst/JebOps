@@ -47,7 +47,7 @@ class KotlinAnnotationPlugin : BasicEnginesPlugin(supportsClassFilter = true, de
             null
     )
 
-    override fun getExecutionOptionDefinitions(): List<IOptionDefinition> {
+    override fun getExecutionOptionDefinfitions(): List<IOptionDefinition> {
         return super.getExecutionOptionDefinitions() + OptionDefinition(
                 KOTLIN_METADATA_SIGNATURE,
                 "Lkotlin/Metadata;",
