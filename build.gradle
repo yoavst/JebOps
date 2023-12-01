@@ -35,6 +35,7 @@ jar {
                                          "com.yoavst.jeb.plugins.kotlin.KotlinAnnotationPlugin",
                                          "com.yoavst.jeb.plugins.kotlin.KotlinIntrinsicsPlugin",
                                          "com.yoavst.jeb.plugins.sourcefile.SourceFilePlugin",
+                                         "com.yoavst.jeb.plugins.xrefsquery.XrefsQueryPlugin",
                                          "com.yoavst.jeb.plugins.tostring.ToStringRenamingPlugin"].join(" "),
                 "jebPlugin-version": project.version
         )

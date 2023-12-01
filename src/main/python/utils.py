@@ -12,7 +12,7 @@ def launch_plugin(plugin, ctx, loader, close_loader=True):
     class RunnableClass(Runnable):
         def run(self):
             opts = UIUtils.openOptionsForPlugin(plugin, ctx.getEnginesContext())
-            if not opts:
+            if opts is None:
                 print "Plugin opening aborted"
                 return
 
