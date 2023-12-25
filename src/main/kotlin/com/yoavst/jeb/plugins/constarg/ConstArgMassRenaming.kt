@@ -12,6 +12,7 @@ import com.yoavst.jeb.utils.*
 import com.yoavst.jeb.utils.renaming.RenameEngine
 import com.yoavst.jeb.utils.renaming.RenameReason
 import com.yoavst.jeb.utils.renaming.RenameRequest
+import java.util.stream.Collectors
 
 class ConstArgMassRenaming(
         private val renamers: Map<String, ExtendedRenamer>,
@@ -24,13 +25,13 @@ class ConstArgMassRenaming(
 
     fun processUnit(unit: IDexUnit, renameEngine: RenameEngine) {
         val decompiler = unit.decompilerRef
-        var seq = getXrefs(unit).asSequence()
-        seq = if (isOperatingOnlyOnThisClass) {
-            seq.filter { it.classType == UIBridge.currentClass }
+        var stream = getXrefs(unit).parallelStream()
+        stream = if (isOperatingOnlyOnThisClass) {
+            stream.filter { it.classType == UIBridge.currentClass }
         } else {
-            seq.filter { classFilter.matches(it.classType.implementingClass) }
+            stream.filter { classFilter.matches(it.classType.implementingClass) }
         }
-        seq.forEach { processMethod(it, unit, decompiler, renameEngine) }
+        stream.forEach { processMethod(it, unit, decompiler, renameEngine) }
     }
 
     fun propagate(unit: IDexUnit, renameEngine: RenameEngine) {
@@ -86,14 +87,17 @@ class ConstArgMassRenaming(
                     throw e
                 }
             }
+
             element is IJavaNew && element.constructorSignature in renamers -> {
                 // the method we were looking for was a constructor
                 processMatchedMethod(assignee, renamers[element.constructorSignature]!!) { element.arguments[it] }
             }
+
             recursive -> {
                 // Try sub elements
                 element.subElements.forEach { traverseElement(it, assignee) }
             }
+
             else -> {
             }
         }
@@ -150,6 +154,7 @@ class ConstArgMassRenaming(
                     }
                     renameEngine.renameField(request, field, cls)
                 }
+
                 is IJavaInstanceField -> {
                     val field = element.field ?: run {
                         logger.warning("Failed to get field: $element")
@@ -157,9 +162,11 @@ class ConstArgMassRenaming(
                     }
                     renameEngine.renameField(request, field, cls)
                 }
+
                 is IJavaIdentifier -> {
                     renameEngine.renameIdentifier(request, element, unit)
                 }
+
                 is IJavaCall -> {
                     // maybe toString or valueOf on argument
                     if (element.methodName == "toString" || element.methodName == "valueOf") {
@@ -169,6 +176,7 @@ class ConstArgMassRenaming(
                         return
                     }
                 }
+
                 else -> {
                     logger.debug("Unsupported argument type: ${element.elementType}")
                     return
@@ -220,10 +228,22 @@ class ConstArgMassRenaming(
 
     }
 
-    private fun getXrefs(unit: IDexUnit): Set<IDexMethod> = renamers.keys.asSequence().mapNotNull(unit::getMethod).onEach {
-        logger.info("Found method: ${it.currentSignature}")
-    }.mapToPair(unit::xrefsFor).onEach { (method, xrefs) ->
-        if (xrefs.isNotEmpty())
-            logger.info("Found ${xrefs.size} xrefs for method: ${method.currentSignature}")
-    }.flatMap { it.second }.mapTo(mutableSetOf(), unit::getMethod)
+
+    private fun getXrefs(unit: IDexUnit): Set<IDexMethod> = renamers
+            .keys
+            .parallelStream()
+            .mapNotNull(unit::getMethod)
+            .peek {
+                logger.info("Found method: ${it.currentSignature}")
+            }
+            .mapToPair(unit::xrefsFor)
+            .peek { (method, xrefs) ->
+                if (xrefs.isNotEmpty())
+                    logger.info("Found ${xrefs.size} xrefs for method: ${method.currentSignature}")
+            }
+            .flatMap { (method, xrefs) ->
+                xrefs.stream()
+            }
+            .map(unit::getMethod)
+            .collect(Collectors.toSet())
 }

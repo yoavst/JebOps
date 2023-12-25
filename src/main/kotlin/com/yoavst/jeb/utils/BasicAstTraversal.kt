@@ -1,7 +1,7 @@
 package com.yoavst.jeb.utils
 
-import com.pnfsoftware.jeb.core.units.code.java.IJavaCompound
 import com.pnfsoftware.jeb.core.units.code.java.IJavaBlock
+import com.pnfsoftware.jeb.core.units.code.java.IJavaCompound
 import com.pnfsoftware.jeb.core.units.code.java.IJavaMethod
 import com.pnfsoftware.jeb.core.units.code.java.IJavaStatement
 import com.yoavst.jeb.utils.renaming.RenameEngine

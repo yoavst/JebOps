@@ -15,7 +15,7 @@ val assigneeRenamer: (String) -> RenameResult = { RenameResult(assigneeName = it
 fun scriptRenamer(script: String): (String) -> RenameResult {
     val baseInterpreter = PythonInterpreter().apply {
         exec(
-            """
+                """
         def split2(s, sep, at_least):
             '''Split the string using separator. Result array will be at least the given length.'''
             arr = s.split(sep)
@@ -35,10 +35,10 @@ fun scriptRenamer(script: String): (String) -> RenameResult {
         baseInterpreter[INPUT] = tag
         baseInterpreter.exec(script)
         RenameResult(
-            baseInterpreter[CLASS]?.asStringOrNull(),
-            baseInterpreter[METHOD]?.asStringOrNull(),
-            baseInterpreter[ARGUMENT]?.asStringOrNull(),
-            baseInterpreter[ASSIGNEE]?.asStringOrNull()
+                baseInterpreter[CLASS]?.asStringOrNull(),
+                baseInterpreter[METHOD]?.asStringOrNull(),
+                baseInterpreter[ARGUMENT]?.asStringOrNull(),
+                baseInterpreter[ASSIGNEE]?.asStringOrNull()
         )
     }
 
