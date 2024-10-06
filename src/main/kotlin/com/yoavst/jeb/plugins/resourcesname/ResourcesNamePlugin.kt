@@ -118,6 +118,7 @@ class ResourcesNamePlugin : BasicEnginesPlugin(
         }
 
         val packageSignature = "L${context.apkPackage}.".replace(".", "/")
+        val highLevelContext = decompiler.highLevelContext
 
         // process decompile method
         decompiledMethod.body.visitSubElementsRecursive { element, parent ->
@@ -125,8 +126,8 @@ class ResourcesNamePlugin : BasicEnginesPlugin(
                 val resource = intToResourceId[element.int] ?: return@visitSubElementsRecursive
 
                 val rType = decompiler.highLevelContext.typeFactory.createType(resource.toClass(packageSignature))
-                val resField = decompiler.astFactories.createFieldReference(resource.toField(packageSignature))
-                val resStaticField = decompiler.astFactories.createStaticField(rType, resField)
+                val resField = highLevelContext.createFieldReference(resource.toField(packageSignature))
+                val resStaticField = highLevelContext.createStaticField(rType, resField)
                 parent.replaceSubElement(element, resStaticField)
                 method.classType.implementingClass?.let(engine.stats.effectedClasses::add)
             }
