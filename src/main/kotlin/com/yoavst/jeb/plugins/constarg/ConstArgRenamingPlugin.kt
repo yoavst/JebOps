@@ -1,8 +1,6 @@
 package com.yoavst.jeb.plugins.constarg
 
 import com.pnfsoftware.jeb.core.*
-import com.pnfsoftware.jeb.core.units.NotificationType
-import com.pnfsoftware.jeb.core.units.UnitNotification
 import com.pnfsoftware.jeb.core.units.code.android.IDexUnit
 import com.pnfsoftware.jeb.core.units.code.android.dex.IDexMethod
 import com.yoavst.jeb.bridge.UIBridge
@@ -17,12 +15,12 @@ import java.io.File
 import kotlin.properties.Delegates
 
 class ConstArgRenamingPlugin :
-    BasicEnginesPlugin(
-        supportsClassFilter = true,
-        defaultForScopeOnThisClass = false,
-        defaultForScopeOnThisFunction = false,
-        usingSelectedMethod = true
-    ) {
+        BasicEnginesPlugin(
+                supportsClassFilter = true,
+                defaultForScopeOnThisClass = false,
+                defaultForScopeOnThisFunction = false,
+                usingSelectedMethod = true
+        ) {
 
     private var constArgumentIndex by Delegates.notNull<Int>()
     private var renamedArgumentIndex = -1
@@ -30,30 +28,30 @@ class ConstArgRenamingPlugin :
     private lateinit var renamer: (String) -> RenameResult
 
     override fun getPluginInformation(): IPluginInformation = PluginInformation(
-        "Const arg renaming plugin",
-        "Fire the plugin to change names using information from a constant string argument to function",
-        "Yoav Sternberg",
-        PLUGIN_VERSION,
-        JEB_VERSION,
-        null
+            "Const arg renaming plugin",
+            "Fire the plugin to change names using information from a constant string argument to function",
+            "Yoav Sternberg",
+            PLUGIN_VERSION,
+            JEB_VERSION,
+            null
     )
 
     override fun getExecutionOptionDefinitions(): List<IOptionDefinition> {
         val options = super.getExecutionOptionDefinitions().toMutableList()
         options += ListOptionDefinition(
-            TargetRenameTag,
-            RenameTarget.Class.name,
-            "What do we want to renamed based on the argument",
-            *RenameTarget.values().map(RenameTarget::name).toTypedArray()
+                TargetRenameTag,
+                RenameTarget.Class.name,
+                "What do we want to renamed based on the argument",
+                *RenameTarget.values().map(RenameTarget::name).toTypedArray()
         )
         options += OptionDefinition(
-            TargetConstArgIndex,
-            "0",
-            "What is the index of the const argument that will be used as name?"
+                TargetConstArgIndex,
+                "0",
+                "What is the index of the const argument that will be used as name?"
         )
         options += OptionDefinition(
-            TargetArgumentToBeRenamedPosition,
-            "Optional: If renaming an argument, what is its index"
+                TargetArgumentToBeRenamedPosition,
+                "Optional: If renaming an argument, what is its index"
         )
         return options
     }
@@ -99,6 +97,7 @@ class ConstArgRenamingPlugin :
                 }
                 scriptRenamer(File(scriptPath).readText())
             }
+
             RenameTarget.Class -> classRenamer
             RenameTarget.Method -> methodRenamer
             RenameTarget.Argument -> {
@@ -112,6 +111,7 @@ class ConstArgRenamingPlugin :
                 }
                 argumentRenamer
             }
+
             RenameTarget.Assignee -> assigneeRenamer
         }
         return true
@@ -119,9 +119,9 @@ class ConstArgRenamingPlugin :
 
     override fun processUnit(unit: IDexUnit, renameEngine: RenameEngine) {
         val massRenamer = ConstArgMassRenaming(
-            mapOf(
-                renameMethod.getSignature(false) to ExtendedRenamer(constArgumentIndex, renamer, renamedArgumentIndex)
-            ), isOperatingOnlyOnThisClass, classFilter
+                mapOf(
+                        renameMethod.getSignature(false) to ExtendedRenamer(constArgumentIndex, renamer, renamedArgumentIndex)
+                ), isOperatingOnlyOnThisClass, classFilter
         )
 
         if (isOperatingOnlyOnThisMethod) {

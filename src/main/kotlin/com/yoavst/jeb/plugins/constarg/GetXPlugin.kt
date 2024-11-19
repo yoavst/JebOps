@@ -9,6 +9,7 @@ import com.yoavst.jeb.plugins.PLUGIN_VERSION
 import com.yoavst.jeb.utils.*
 import com.yoavst.jeb.utils.renaming.RenameEngine
 import java.util.*
+import java.util.stream.Collectors
 
 class GetXPlugin : BasicEnginesPlugin(supportsClassFilter = true, defaultForScopeOnThisClass = false) {
     override fun getPluginInformation(): IPluginInformation = PluginInformation(
@@ -21,10 +22,12 @@ class GetXPlugin : BasicEnginesPlugin(supportsClassFilter = true, defaultForScop
     )
 
     override fun processUnit(unit: IDexUnit, renameEngine: RenameEngine) {
-        val visitor = simpleNameMethodVisitor(renameEngine)
-        val renamers = unit.methods.asSequence().mapToPairNotNull(visitor).associate { (method, result) ->
-            method.currentSignature to result
-        }
+        val visitor: (IDexMethod) -> ExtendedRenamer? = simpleNameMethodVisitor(renameEngine)
+
+        val renamers = unit.methods.parallelStream().mapToPairNotNull(visitor).filter { (method, result) ->
+            result != null
+        }.collect(Collectors.toMap({ (method, result) -> method.currentSignature }, { (method, result) -> result }))
+
         ConstArgMassRenaming(renamers, isOperatingOnlyOnThisClass, classFilter, recursive = false).processUnit(unit, renameEngine)
     }
 
@@ -38,9 +41,11 @@ class GetXPlugin : BasicEnginesPlugin(supportsClassFilter = true, defaultForScop
                 method.parameterTypes.size == 0 -> {
                     ExtendedRenamer(-1, { RenameResult(assigneeName = fieldName) }, -1)
                 }
+
                 method.isStatic && method.parameterTypes.size == 1 -> {
                     ExtendedRenamer(-1, { RenameResult(argumentName = fieldName) }, 0)
                 }
+
                 else -> null
             }
         } else if (name.startsWith("set") && name.length >= 4) {
@@ -49,9 +54,11 @@ class GetXPlugin : BasicEnginesPlugin(supportsClassFilter = true, defaultForScop
                 method.parameterTypes.size == 1 -> {
                     ExtendedRenamer(-1, { RenameResult(argumentName = fieldName) }, 0)
                 }
+
                 method.isStatic && method.parameterTypes.size == 2 -> {
                     ExtendedRenamer(-1, { RenameResult(argumentName = fieldName) }, 1)
                 }
+
                 else -> null
             }
         } else null

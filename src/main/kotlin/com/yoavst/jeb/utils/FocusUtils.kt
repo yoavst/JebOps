@@ -64,10 +64,12 @@ fun IGraphicalClientContext.currentFocusedMethod(supportFocus: Boolean = true, v
                     }
                     return selectedMethod
                 }
+
                 ItemClassIdentifiers.CLASS_NAME, ItemClassIdentifiers.EXTERNAL_CLASS_NAME -> {
                     logger.error("Note: You cannot select a constructor from Java decompilation view. Switch to bytecode view and select the init function.")
                     return null
                 }
+
                 else -> {}
             }
         }
@@ -146,6 +148,7 @@ fun IGraphicalClientContext.currentFocusedType(supportFocus: Boolean = true, ver
                         logger.error("Cannot get selected class: $fragment")
                         null
                     }
+
                     is IDexClass -> selectedClass.classType as? IDexType
                     else -> {
                         logger.error("Selected class is not dex: $selectedClass")
@@ -158,6 +161,7 @@ fun IGraphicalClientContext.currentFocusedType(supportFocus: Boolean = true, ver
                         logger.error("Cannot get selected type: $fragment")
                         null
                     }
+
                     is IDexType -> selectedType
                     else -> {
                         logger.error("Selected type is not dex: $selectedType")

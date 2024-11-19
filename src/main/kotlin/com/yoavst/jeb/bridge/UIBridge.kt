@@ -2,7 +2,6 @@ package com.yoavst.jeb.bridge
 
 import com.pnfsoftware.jeb.client.api.IGraphicalClientContext
 import com.pnfsoftware.jeb.core.output.IItem
-import com.pnfsoftware.jeb.core.units.code.android.dex.IDexItem
 import com.pnfsoftware.jeb.core.units.code.android.dex.IDexMethod
 import com.pnfsoftware.jeb.core.units.code.android.dex.IDexType
 import com.yoavst.jeb.utils.currentFocusedMethod

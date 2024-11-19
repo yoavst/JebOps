@@ -27,6 +27,7 @@ fun KotlinClassHeader.toStringBlock(): String {
                     |Properties:${klass.properties.joinToString(separator = INDENT, prefix = INDENT) { "${it.fieldSignature}" }}
         """.trimMargin()
         }
+
         is KotlinClassMetadata.FileFacade -> {
             val klass = metadata.toKmPackage()
             """$KOTLIN_METADATA_COMMENT_PREFIX
@@ -37,6 +38,7 @@ fun KotlinClassHeader.toStringBlock(): String {
                     |Properties:${klass.properties.joinToString(separator = INDENT, prefix = INDENT) { "${it.fieldSignature}" }}
         """.trimMargin()
         }
+
         is KotlinClassMetadata.SyntheticClass -> {
             if (metadata.isLambda) {
                 val klass = metadata.toKmLambda()
@@ -57,11 +59,13 @@ fun KotlinClassHeader.toStringBlock(): String {
 
             }
         }
+
         is KotlinClassMetadata.MultiFileClassFacade -> """$KOTLIN_METADATA_COMMENT_PREFIX
             |Type: Multi-File Class Facade
             |This multi-file class combines:
             |${metadata.partClassNames.joinToString(separator = INDENT, prefix = INDENT) { "Class: $it" }}
         """.trimMargin()
+
         is KotlinClassMetadata.MultiFileClassPart -> {
             val klass = metadata.toKmPackage()
             """$KOTLIN_METADATA_COMMENT_PREFIX
@@ -73,6 +77,7 @@ fun KotlinClassHeader.toStringBlock(): String {
                     |Properties:${klass.properties.joinToString(separator = INDENT, prefix = INDENT) { "${it.fieldSignature}" }}
         """.trimMargin()
         }
+
         is KotlinClassMetadata.Unknown -> """$KOTLIN_METADATA_COMMENT_PREFIX Type: Unknown"""
         null -> ""
     }

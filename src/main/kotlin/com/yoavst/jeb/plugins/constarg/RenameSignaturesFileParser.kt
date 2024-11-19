@@ -22,8 +22,8 @@ object RenameSignaturesFileParser {
         }
         val constArgIndex = split[2].toIntOrNull() ?: throw IllegalArgumentException("Invalid line: '$it'")
         val target = RenameTarget.valueOf(
-            split[0].lowercase(Locale.getDefault())
-            .replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString() })
+                split[0].lowercase(Locale.getDefault())
+                        .replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString() })
         split[1] to when (target) {
             RenameTarget.Class -> ExtendedRenamer(constArgIndex, classRenamer)
             RenameTarget.Method -> ExtendedRenamer(constArgIndex, methodRenamer)
@@ -32,9 +32,11 @@ object RenameSignaturesFileParser {
                     throw IllegalArgumentException("Invalid line, no renamed argument index: '$it'")
                 }
                 val renamedArgIndex =
-                    split[3].toIntOrNull() ?: throw IllegalArgumentException("Invalid line, renamed argument is not int: '$it'")
+                        split[3].toIntOrNull()
+                                ?: throw IllegalArgumentException("Invalid line, renamed argument is not int: '$it'")
                 ExtendedRenamer(constArgIndex, argumentRenamer, renamedArgIndex)
             }
+
             RenameTarget.Assignee -> ExtendedRenamer(constArgIndex, assigneeRenamer)
             RenameTarget.Custom -> {
                 if (split.size < 4) {
@@ -42,15 +44,17 @@ object RenameSignaturesFileParser {
                 }
                 val filename = split[3]
                 val script = if (filename.startsWith("jar:")) {
-                    javaClass.classLoader.getResourceAsStream(filename.substringAfter("jar:"))?.bufferedReader()?.readText() ?: run {
-                        throw IllegalArgumentException("Invalid line, no such file in jar: '$it'")
-                    }
+                    javaClass.classLoader.getResourceAsStream(filename.substringAfter("jar:"))?.bufferedReader()?.readText()
+                            ?: run {
+                                throw IllegalArgumentException("Invalid line, no such file in jar: '$it'")
+                            }
                 } else {
                     File(basePath, split[3]).readText()
                 }
                 if (split.size == 5) {
                     val renamedArgIndex =
-                        split[4].toIntOrNull() ?: throw IllegalArgumentException("Invalid line, renamed argument is not int: '$it'")
+                            split[4].toIntOrNull()
+                                    ?: throw IllegalArgumentException("Invalid line, renamed argument is not int: '$it'")
                     ExtendedRenamer(constArgIndex, scriptRenamer(script), renamedArgIndex)
                 } else {
                     ExtendedRenamer(constArgIndex, scriptRenamer(script))

@@ -47,7 +47,7 @@ class KotlinAnnotationPlugin : BasicEnginesPlugin(supportsClassFilter = true, de
             null
     )
 
-    override fun getExecutionOptionDefinitions(): List<IOptionDefinition> {
+    override fun getExecutionOptionDefinfitions(): List<IOptionDefinition> {
         return super.getExecutionOptionDefinitions() + OptionDefinition(
                 KOTLIN_METADATA_SIGNATURE,
                 "Lkotlin/Metadata;",
@@ -148,7 +148,7 @@ class KotlinAnnotationPlugin : BasicEnginesPlugin(supportsClassFilter = true, de
 
         val annotationTypeIndex = annotationClass.classTypeIndex
 
-        var seq = unit.classes.asSequence()
+        var seq = unit.classes.parallelStream()
         seq = if (isOperatingOnlyOnThisClass) {
             seq.filter { it.classType == UIBridge.currentClass }
         } else {
@@ -183,8 +183,8 @@ class KotlinAnnotationPlugin : BasicEnginesPlugin(supportsClassFilter = true, de
         if (KOTLIN_METADATA_COMMENT_PREFIX !in originalComment) {
             val comment = header.toStringBlock()
             if (originalComment.isBlank()) {
-                unit.setCommentBackport(cls.currentSignature,  comment)
-             } else {
+                unit.setCommentBackport(cls.currentSignature, comment)
+            } else {
                 unit.setCommentBackport(cls.currentSignature, originalComment + "\n\n" + comment)
             }
         }
@@ -195,6 +195,7 @@ class KotlinAnnotationPlugin : BasicEnginesPlugin(supportsClassFilter = true, de
                 val name = classInfo.name.split("/").last().replace(".", "$")
                 renameEngine.renameClass(RenameRequest(name, RenameReason.KotlinName), cls)
             }
+
             is KotlinClassMetadata.FileFacade -> Unit
             is KotlinClassMetadata.SyntheticClass -> Unit
             is KotlinClassMetadata.MultiFileClassFacade -> Unit
@@ -202,6 +203,7 @@ class KotlinAnnotationPlugin : BasicEnginesPlugin(supportsClassFilter = true, de
             is KotlinClassMetadata.Unknown -> {
                 logger.warning("Encountered unknown class: ${cls.currentName}. It probably means the metadata lib version is old.")
             }
+
             null -> Unit
         }
     }

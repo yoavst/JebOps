@@ -92,7 +92,7 @@ abstract class BaseDalvikSimulator(protected val clazz: IDexClass, protected val
     }
 
     protected fun IDexType.isSubClass(): Boolean =
-        implementingClass?.supertypes?.any { it.index == classIndex } == true
+            implementingClass?.supertypes?.any { it.index == classIndex } == true
     //endregion
 }
 

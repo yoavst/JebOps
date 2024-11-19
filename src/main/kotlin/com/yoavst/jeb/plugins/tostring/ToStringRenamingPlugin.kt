@@ -16,12 +16,12 @@ import com.yoavst.jeb.utils.renaming.RenameRequest
 
 class ToStringRenamingPlugin : BasicEnginesPlugin(supportsClassFilter = true, defaultForScopeOnThisClass = false) {
     override fun getPluginInformation(): IPluginInformation = PluginInformation(
-        "ToString renaming",
-        "Fire the plugin to change obfuscated fields' name given a verbose toString implementation",
-        "Yoav Sternberg",
-        PLUGIN_VERSION,
-        JEB_VERSION,
-        null
+            "ToString renaming",
+            "Fire the plugin to change obfuscated fields' name given a verbose toString implementation",
+            "Yoav Sternberg",
+            PLUGIN_VERSION,
+            JEB_VERSION,
+            null
     )
 
     override fun processUnit(unit: IDexUnit, renameEngine: RenameEngine) {
@@ -30,8 +30,8 @@ class ToStringRenamingPlugin : BasicEnginesPlugin(supportsClassFilter = true, de
             val cls = UIBridge.focusedClass?.implementingClass ?: return
             processClass(cls, decompiler, renameEngine)
         } else {
-            unit.classes.asSequence().filter(classFilter::matches)
-                .forEach { processClass(it, decompiler, renameEngine) }
+            unit.classes.parallelStream().filter(classFilter::matches)
+                    .forEach { processClass(it, decompiler, renameEngine) }
         }
 
         propagateRenameToGetterAndSetters(unit, renameEngine.stats.effectedClasses, renameEngine)
@@ -104,6 +104,7 @@ class ToStringRenamingPlugin : BasicEnginesPlugin(supportsClassFilter = true, de
                     break
 
                 }
+
                 is IJavaOperation -> {
                     /*
                          2. Left traversal to restore names
@@ -127,6 +128,7 @@ class ToStringRenamingPlugin : BasicEnginesPlugin(supportsClassFilter = true, de
                     expression = left.left
 
                 }
+
                 else -> {
                     logger.debug("Warning: The toString method for ${cls.name} has a complex expression ${left?.javaClass?.canonicalName}")
                     return
@@ -136,8 +138,8 @@ class ToStringRenamingPlugin : BasicEnginesPlugin(supportsClassFilter = true, de
     }
 
     private fun renamePossibleExpressionWithStr(
-        exp: IJavaExpression, newName: String,
-        cls: IDexClass, renameEngine: RenameEngine
+            exp: IJavaExpression, newName: String,
+            cls: IDexClass, renameEngine: RenameEngine
     ) {
         if (newName.isBlank()) {
             logger.debug("Warning: The toString method for ${cls.name} yielded a blank field name")

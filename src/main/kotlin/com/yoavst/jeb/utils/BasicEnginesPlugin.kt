@@ -12,11 +12,11 @@ import com.yoavst.jeb.utils.renaming.RenameEngine
 import kotlin.properties.Delegates
 
 abstract class BasicEnginesPlugin(
-    private val supportsClassFilter: Boolean = false,
-    private val defaultForScopeOnThisClass: Boolean? = null,
-    private val defaultForScopeOnThisFunction: Boolean? = null,
-    private val usingSelectedMethod: Boolean = false,
-    private val usingSelectedClass: Boolean = false
+        private val supportsClassFilter: Boolean = false,
+        private val defaultForScopeOnThisClass: Boolean? = null,
+        private val defaultForScopeOnThisFunction: Boolean? = null,
+        private val usingSelectedMethod: Boolean = false,
+        private val usingSelectedClass: Boolean = false
 ) : AbstractEnginesPlugin() {
     protected lateinit var context: IEnginesContext
     protected val logger: ILogger = GlobalLog.getLogger(javaClass)
@@ -63,13 +63,13 @@ abstract class BasicEnginesPlugin(
             out += ClassFilterOption
         if (defaultForScopeOnThisClass != null)
             out += scopeThisClass(
-                defaultForScopeOnThisClass,
-                UIBridge.currentClass?.currentSignature ?: "no class selected"
+                    defaultForScopeOnThisClass,
+                    UIBridge.currentClass?.currentSignature ?: "no class selected"
             )
         if (defaultForScopeOnThisFunction != null)
             out += scopeThisMethod(
-                defaultForScopeOnThisFunction,
-                UIBridge.currentMethod?.currentSignature ?: "no method selected"
+                    defaultForScopeOnThisFunction,
+                    UIBridge.currentMethod?.currentSignature ?: "no method selected"
             )
         return out
     }
@@ -83,10 +83,10 @@ abstract class BasicEnginesPlugin(
             classFilter = Regex(executionOptions[ClassFilterOptionTag].orIfBlank(ClassFilterDefault))
         if (defaultForScopeOnThisClass != null)
             isOperatingOnlyOnThisClass =
-                executionOptions[ScopeThisClassTag].orIfBlank(defaultForScopeOnThisClass.toString()).toBoolean()
+                    executionOptions[ScopeThisClassTag].orIfBlank(defaultForScopeOnThisClass.toString()).toBoolean()
         if (defaultForScopeOnThisFunction != null)
             isOperatingOnlyOnThisMethod =
-                executionOptions[ScopeThisMethodTag].orIfBlank(defaultForScopeOnThisFunction.toString()).toBoolean()
+                    executionOptions[ScopeThisMethodTag].orIfBlank(defaultForScopeOnThisFunction.toString()).toBoolean()
         return true
     }
 }
